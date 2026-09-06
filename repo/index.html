@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Rapid Release Consumable Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+:root{
+  --ground:#EDF1EF; --surface:#FAFCFB; --raised:#FFFFFF;
+  --ink:#0F1F1B; --ink2:#3A4A45; --muted:#667872;
+  --line:#D3DEDA; --line-soft:#E4EBE8;
+  --accent:#00806B; --accent-soft:#DCEDE8;
+  --warn:#A17B06; --warn-soft:#F4EBD4;
+  --crit:#C13657; --crit-soft:#F8E2E7;
+  --shadow:0 1px 2px rgba(15,31,27,.06),0 8px 24px -16px rgba(15,31,27,.22);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --maxw:1160px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0B1311; --surface:#121D1A; --raised:#182522;
+    --ink:#E5EFEB; --ink2:#B4C6C0; --muted:#879C96;
+    --line:#22322E; --line-soft:#1B2926;
+    --accent:#2BA88F; --accent-soft:#12332C;
+    --warn:#BE8820; --warn-soft:#33280E;
+    --crit:#DD5D72; --crit-soft:#3A1C23;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0B1311; --surface:#121D1A; --raised:#182522;
+  --ink:#E5EFEB; --ink2:#B4C6C0; --muted:#879C96;
+  --line:#22322E; --line-soft:#1B2926;
+  --accent:#2BA88F; --accent-soft:#12332C;
+  --warn:#BE8820; --warn-soft:#33280E;
+  --crit:#DD5D72; --crit-soft:#3A1C23;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--body);
+  font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+h1,h2,h3,.dsp{font-family:var(--display);text-wrap:balance;letter-spacing:-.015em}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+</style>
+<style>
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--line);background:var(--surface)}
+.mast-in{max-width:var(--maxw);margin:0 auto;padding:44px 24px 30px}
+.mast h1{font-size:clamp(34px,5.2vw,58px);line-height:1.02;font-weight:800;margin:10px 0 0;
+  max-width:16ch}
+.mast .lede{font-size:18px;color:var(--ink2);max-width:62ch;margin:18px 0 0}
+.meta{display:flex;flex-wrap:wrap;gap:0;margin:28px 0 0;border-top:1px solid var(--line-soft)}
+.meta div{padding:12px 22px 12px 0;margin-right:22px;border-right:1px solid var(--line-soft)}
+.meta div:last-child{border-right:0}
+.meta dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 3px}
+.meta dd{margin:0;font-family:var(--display);font-weight:700;font-size:17px}
+/* ---------- sections ---------- */
+section{padding:52px 0 8px}
+.shead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 6px}
+.shead h2{font-size:27px;font-weight:700;margin:0}
+.snote{color:var(--muted);font-size:15px;max-width:70ch;margin:0 0 24px}
+/* ---------- ledger ---------- */
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:4px;box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;min-width:900px}
+thead th{position:sticky;top:0;z-index:2;background:var(--surface);
+  border-bottom:1px solid var(--line);padding:11px 10px;text-align:right;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:500;white-space:nowrap}
+thead th.l{text-align:left}
+thead th button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px;
+  font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
+thead th button:hover{color:var(--ink)}
+thead th[aria-sort] button{color:var(--accent)}
+.caret{opacity:.55;font-size:9px}
+tbody tr.row{border-bottom:1px solid var(--line-soft);cursor:pointer}
+tbody tr.row:hover{background:var(--accent-soft)}
+tbody tr.row.open{background:var(--accent-soft)}
+td{padding:9px 10px;text-align:right;vertical-align:middle}
+td.l{text-align:left}
+.rk{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--muted);width:44px}
+.rk.top{color:var(--accent)}
+.who{display:flex;align-items:center;gap:10px;min-width:190px}
+.tier{font-family:var(--mono);font-size:10px;font-weight:600;width:18px;height:18px;
+  display:grid;place-items:center;border-radius:2px;flex:none;
+  border:1px solid var(--line);color:var(--muted);background:var(--raised)}
+.tier.A{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.tier.B{border-color:var(--accent);color:var(--accent)}
+.tier.C{border-color:var(--warn);color:var(--warn)}
+.tier.D{border-color:var(--crit);color:var(--crit);background:var(--crit-soft)}
+.nm{font-family:var(--display);font-weight:700;font-size:16px;line-height:1.2}
+.rl{font-size:12px;color:var(--muted);font-family:var(--body)}
+.scorecell{width:150px}
+.scoreline{display:flex;align-items:center;gap:9px;justify-content:flex-end}
+.sbar{flex:1;height:7px;background:var(--line-soft);border-radius:0 3px 3px 0;overflow:hidden;
+  max-width:86px}
+.sbar i{display:block;height:100%;background:var(--accent);border-radius:0 3px 3px 0}
+.sval{font-family:var(--mono);font-size:14.5px;font-weight:600;font-variant-numeric:tabular-nums;
+  width:44px;text-align:right}
+.cov{width:66px}
+.covcell{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.covnum{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;line-height:1}
+.covbar{width:44px;height:4px;background:var(--line-soft);border-radius:2px;overflow:hidden}
+.covbar i{display:block;height:100%}
+.good .covnum{color:var(--accent)} .good .covbar i{background:var(--accent)}
+.mid  .covnum{color:var(--warn)}   .mid .covbar i{background:var(--warn)}
+.bad  .covnum{color:var(--crit)}   .bad .covbar i{background:var(--crit)}
+.flaskcol .covnum{color:var(--ink2)} .flaskcol .covbar i{background:var(--muted)}
+.rate{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;width:64px}
+.rate.zero{color:var(--crit)}
+/* expanded */
+tr.det td{padding:0;border-bottom:1px solid var(--line-soft);background:var(--raised)}
+.detin{padding:20px 22px 24px;display:grid;gap:22px;text-align:left;align-items:start;
+  grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+@media (max-width:820px){.detin{grid-template-columns:1fr}}
+.verdict{font-size:15.5px;line-height:1.6;margin:0;max-width:68ch}
+.verdict b{font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 0}
+.chip{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:2px;
+  border:1px solid var(--line);color:var(--ink2);background:var(--surface)}
+.chip.flag{border-color:var(--crit);color:var(--crit);background:var(--crit-soft)}
+.chip.win{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.dlist{margin:0;font-family:var(--mono);font-size:12.5px}
+.dlist .hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 8px}
+.dlist ul{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.dlist li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;
+  border-bottom:1px dotted var(--line)}
+.dlist li span:last-child{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:500}
+.dlist li span:first-child{color:var(--ink2)}
+.pts{margin-top:16px}
+.ptrow{display:flex;align-items:center;gap:8px;padding:2px 0;font-family:var(--mono);font-size:11.5px}
+.ptrow .lb{width:112px;color:var(--muted)}
+.ptbar{flex:1;height:5px;background:var(--line-soft);border-radius:2px;max-width:130px;overflow:hidden}
+.ptbar i{display:block;height:100%;background:var(--accent)}
+.ptbar.neg i{background:var(--crit)}
+.ptrow .vl{width:42px;text-align:right;font-variant-numeric:tabular-nums}
+</style>
+<style>
+/* ---------- raid read ---------- */
+.raidgrid{display:grid;gap:26px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  align-items:start}
+@media (max-width:820px){.raidgrid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:22px 24px}
+.panel h3{margin:0 0 4px;font-size:18px;font-weight:700}
+.panel p.sub{margin:0 0 18px;color:var(--muted);font-size:14px}
+.hbar{display:grid;gap:11px}
+.hbrow{display:grid;grid-template-columns:126px 1fr 46px;align-items:center;gap:10px}
+.hbrow .lb{font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
+.hbtrack{height:14px;background:var(--line-soft);border-radius:2px;overflow:hidden}
+.hbtrack i{display:block;height:100%;background:var(--accent);border-radius:0 2px 2px 0}
+.hbrow .vl{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;
+  text-align:right;color:var(--ink)}
+.gaps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.gaps li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;
+  padding-bottom:12px;border-bottom:1px solid var(--line-soft);font-size:14.5px;color:var(--ink2)}
+.gaps li:last-child{border-bottom:0;padding-bottom:0}
+.gaps .big{font-family:var(--display);font-weight:800;font-size:24px;color:var(--crit);
+  font-variant-numeric:tabular-nums;line-height:1}
+.gaps .big.ok{color:var(--accent)}
+.gaps b{color:var(--ink);font-weight:600}
+/* ---------- prose ---------- */
+.prose{max-width:68ch}
+.prose p{margin:0 0 16px}
+.prose h3{font-size:17px;margin:26px 0 8px;font-weight:700}
+.prose ul{margin:0 0 16px;padding-left:20px}
+.prose li{margin:0 0 7px}
+.prose code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);
+  padding:1px 5px;border-radius:2px;color:var(--ink)}
+/* ---------- standard table ---------- */
+.std{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.std table{min-width:760px}
+.std th{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:500}
+.std td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-soft);
+  font-size:14.5px;vertical-align:top}
+.std tr:last-child td{border-bottom:0}
+.std td:first-child{font-family:var(--display);font-weight:700;white-space:nowrap}
+.std .it{font-family:var(--mono);font-size:12.5px;color:var(--ink2)}
+.std .wt{font-family:var(--mono);font-size:12.5px;color:var(--accent);white-space:nowrap}
+/* ---------- caveats ---------- */
+.cav{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(268px,1fr))}
+.cav article{border-left:2px solid var(--warn);padding:2px 0 2px 16px}
+.cav article.info{border-left-color:var(--accent)}
+.cav h4{margin:0 0 5px;font-family:var(--display);font-size:15px;font-weight:700}
+.cav p{margin:0;font-size:14.5px;color:var(--ink2)}
+/* ---------- footer ---------- */
+footer{margin-top:56px;border-top:1px solid var(--line);background:var(--surface)}
+.foot-in{max-width:var(--maxw);margin:0 auto;padding:30px 24px 52px}
+.srcs{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.srcs li{font-size:13.5px;color:var(--muted)}
+.srcs a{text-decoration:none;border-bottom:1px solid var(--line)}
+.srcs a:hover{border-bottom-color:var(--accent)}
+.toolbar{display:flex;gap:8px;align-items:center;margin:0 0 14px;flex-wrap:wrap}
+.toolbar .hint{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 0;font-family:var(--mono);font-size:11px;
+  color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:10px;height:10px;border-radius:2px;display:inline-block}
+@media (prefers-reduced-motion:no-preference){
+  tr.row,.sbar i,.hbtrack i{transition:background-color .12s ease,width .3s ease}
+}
+</style>
+<style>
+/* ---------- marks distributor ---------- */
+.marks{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+  box-shadow:var(--shadow);overflow:hidden}
+.marks-ctl{display:grid;gap:20px;padding:22px 24px;border-bottom:1px solid var(--line);
+  grid-template-columns:repeat(auto-fit,minmax(196px,1fr));align-items:end}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld label{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted)}
+.fld .help{font-size:12px;color:var(--muted);font-family:var(--body);line-height:1.4}
+input[type=number],select{font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;
+  padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:var(--raised);
+  color:var(--ink);width:100%}
+input[type=number]:focus,select:focus{border-color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.bigin input{font-family:var(--display);font-weight:800;font-size:30px;padding:6px 10px;
+  letter-spacing:-.02em}
+.segs{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.segs button{all:unset;flex:1;text-align:center;padding:8px 6px;cursor:pointer;
+  font-family:var(--mono);font-size:11.5px;color:var(--muted);background:var(--raised)}
+.segs button+button{border-left:1px solid var(--line)}
+.segs button[aria-pressed=true]{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .segs button[aria-pressed=true]{color:#08130F}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .segs button[aria-pressed=true]{color:#08130F}}
+.marks-sum{display:flex;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--line);
+  background:var(--raised)}
+.marks-sum div{padding:14px 22px;border-right:1px solid var(--line-soft);flex:1;min-width:150px}
+.marks-sum div:last-child{border-right:0}
+.marks-sum dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 4px}
+.marks-sum dd{margin:0;font-family:var(--display);font-weight:800;font-size:22px;
+  font-variant-numeric:tabular-nums}
+.warnbar{padding:11px 22px;background:var(--crit-soft);color:var(--crit);font-size:14px;
+  border-bottom:1px solid var(--line);font-family:var(--body)}
+.mk{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.mkcell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.pips{display:inline-flex;gap:2px}
+.pips i{width:6px;height:14px;border-radius:1px;background:var(--accent);display:block}
+.pips i.tf{background:var(--warn)}
+.net.pos{color:var(--accent)} .net.neg{color:var(--ink2)}
+/* ---------- view tabs ---------- */
+.tabs{display:flex;gap:2px;margin:0 0 14px;flex-wrap:wrap}
+.tabs button{all:unset;cursor:pointer;padding:7px 14px;border:1px solid var(--line);
+  border-radius:3px;font-family:var(--mono);font-size:11.5px;color:var(--muted);
+  background:var(--surface)}
+.tabs button[aria-selected=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+:root[data-theme="dark"] .tabs button[aria-selected=true]{color:#08130F}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tabs button[aria-selected=true]{color:#08130F}}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected=true]:hover{color:#fff}
+/* ---------- price grid ---------- */
+details.prices{margin:0;border-top:1px solid var(--line)}
+details.prices summary{cursor:pointer;padding:14px 24px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--muted);list-style:none;
+  display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.prices summary::-webkit-details-marker{display:none}
+details.prices summary:hover{color:var(--ink)}
+details.prices summary .tw{font-family:var(--display);font-size:13px;text-transform:none;
+  letter-spacing:0;color:var(--ink2)}
+.pgrid{padding:4px 24px 24px;display:grid;gap:10px 18px;
+  grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+.pitem{display:grid;grid-template-columns:1fr 68px;gap:8px;align-items:center}
+.pitem span{font-size:12.5px;color:var(--ink2)}
+.pitem input{padding:5px 7px;font-size:13px;text-align:right}
+.prow-note{padding:0 24px 20px;font-size:13px;color:var(--muted);max-width:78ch}
+.numcol{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.numcol.z{color:var(--line)}
+td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;font-weight:600}
+.tankbadge{font-family:var(--mono);font-size:9px;letter-spacing:.06em;border:1px solid var(--warn);
+  color:var(--warn);border-radius:2px;padding:0 4px;margin-left:6px;vertical-align:1px}
+.sharebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 24px;
+  border-top:1px solid var(--line);background:var(--raised)}
+.sharebar button{all:unset;cursor:pointer;padding:7px 14px;border:1px solid var(--accent);
+  border-radius:3px;font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+.sharebar button:hover{background:var(--accent-soft)}
+.sharebar .msg{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+
+.paste{padding:4px 24px 22px;display:flex;flex-direction:column;gap:8px;max-width:820px}
+.paste label{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+.paste .pnote{margin:0;font-size:13px;color:var(--muted);line-height:1.5}
+.paste textarea{font-family:var(--mono);font-size:13px;padding:10px;border:1px solid var(--line);
+  border-radius:3px;background:var(--raised);color:var(--ink);resize:vertical;width:100%}
+.paste textarea:focus{border-color:var(--accent);outline:none}
+.pactions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pactions button{all:unset;cursor:pointer;padding:7px 14px;border:1px solid var(--accent);
+  border-radius:3px;font-family:var(--mono);font-size:11.5px;color:var(--accent)}
+.pactions button:hover{background:var(--accent-soft)}
+.pactions .msg{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.itemlist{margin-top:16px}
+.itemlist .hd{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 8px}
+.itemlist ul{list-style:none;margin:0;padding:0}
+.itemlist li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;
+  border-bottom:1px dotted var(--line);font-family:var(--mono);font-size:12.5px}
+.itemlist li span:first-child{color:var(--ink2)}
+.itemlist li span:last-child{color:var(--ink);font-variant-numeric:tabular-nums}
+.itemlist li.hl span:first-child{color:var(--accent);font-weight:500}
+
+.livebar{margin:0 0 14px;font-family:var(--mono);font-size:11.5px;color:var(--accent);
+  padding:8px 12px;background:var(--accent-soft);border-radius:3px;display:inline-block}
+.livetbl{padding:0 24px 24px}
+.livetbl h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;font-weight:500}
+.livegrid{display:grid;gap:2px 20px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.livegrid div{display:flex;justify-content:space-between;gap:10px;padding:3px 0;
+  border-bottom:1px dotted var(--line);font-family:var(--mono);font-size:12px}
+.livegrid span:first-child{color:var(--ink2)}
+.livegrid span:last-child{color:var(--ink);font-variant-numeric:tabular-nums}
+</style>
+<header class="mast">
+  <div class="mast-in">
+    <p class="eyebrow">Team Rapid Release &middot; Black Temple &middot; Week 2 &middot; 06 Sep 2026</p>
+    <h1>Who Actually Brought Consumables</h1>
+    <p class="lede">All 25 raiders ranked on every consumable they used across the 17 boss fights &mdash;
+      flasks, both elixir slots, food, oils, scrolls, haste and destruction potions, Flame Caps, FAPs,
+      Ironshield, runes, drums and bombs &mdash; then Marks of the Illidari split by what each raider
+      actually spent. Tank, healer and DPS on the same sheet.</p>
+    <dl class="meta">
+      <div><dt>Zone</dt><dd>Black Temple</dd></div>
+      <div><dt>Clear time</dt><dd>3:24:00</dd></div>
+      <div><dt>Boss fights</dt><dd>17</dd></div>
+      <div><dt>Raiders</dt><dd>25</dd></div>
+      <div><dt>Est. raid spend</dt><dd>8,715g</dd></div>
+      <div><dt>Spend spread</dt><dd>43g &ndash; 785g</dd></div>
+      <div><dt>Marks already spent</dt><dd>57</dd></div>
+    </dl>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="marks">
+  <div class="shead"><h2>Marks of the Illidari</h2><p class="eyebrow">enter the raid total &mdash; everything below recalculates</p></div>
+  <p class="snote">One Mark redeems for exactly one thing: a Shattrath flask, <em>or</em> ten Haste
+    Potions, <em>or</em> ten Destruction Potions &mdash; you pick, you don't get all three. At today's
+    Anniversary prices that makes a Mark worth between 82g and 92g depending on which you take, so a
+    Mark is consumable currency and handing it to the people who bought the consumables is a straight
+    reimbursement. Default split is proportional to estimated gold spent, with every tank guaranteed one.</p>
+
+  <div class="marks">
+    <div class="marks-ctl">
+      <div class="fld bigin">
+        <label for="mkTotal">Marks earned this raid</label>
+        <input type="number" id="mkTotal" min="0" max="999" step="1" value="40">
+      </div>
+      <div class="fld">
+        <label>Split by</label>
+        <div class="segs" id="mkBasis" role="group" aria-label="Distribution basis">
+          <button type="button" data-v="gold" aria-pressed="true">Gold spent</button>
+          <button type="button" data-v="score" aria-pressed="false">Score</button>
+          <button type="button" data-v="blend" aria-pressed="false">Both</button>
+        </div>
+        <span class="help">Gold spent reimburses outlay. Score also rewards coverage and drums.</span>
+      </div>
+      <div class="fld">
+        <label>A Mark is worth</label>
+        <div class="segs" id="mkRedeem" role="group" aria-label="Mark redemption">
+          <button type="button" data-v="best" aria-pressed="true">Best</button>
+          <button type="button" data-v="flask">Flask</button>
+          <button type="button" data-v="haste">10 Haste</button>
+          <button type="button" data-v="destr">10 Destr</button>
+        </div>
+        <span class="help">One Mark buys <em>one</em> of these &mdash; a Shattrath flask, ten Haste Potions
+          <em>or</em> ten Destruction Potions. Never a combination.</span>
+      </div>
+      <div class="fld">
+        <label for="mkSkew">Skew &mdash; <span class="num" id="mkSkewV">1.0</span></label>
+        <input type="range" id="mkSkew" min="0" max="3" step="0.1" value="1">
+        <span class="help">0 = even split &middot; 1 = strictly proportional &middot; 3 = heavily favours the biggest spenders.</span>
+      </div>
+      <div class="fld">
+        <label for="mkTank">Tank floor</label>
+        <input type="number" id="mkTank" min="0" max="20" step="1" value="1">
+        <span class="help">Guaranteed to Captrawr, Oddbird and Thotiana before anything else is split.</span>
+      </div>
+      <div class="fld">
+        <label for="mkFloor">Floor for everyone</label>
+        <input type="number" id="mkFloor" min="0" max="20" step="1" value="0">
+        <span class="help">A guaranteed minimum for every raider, tanks included.</span>
+      </div>
+    </div>
+
+    <dl class="marks-sum" id="mkSum"></dl>
+    <div id="mkWarn"></div>
+
+    <div class="tablewrap">
+      <table id="mkTbl">
+        <thead><tr>
+          <th class="l" style="width:44px">#</th>
+          <th class="l">Raider</th>
+          <th>Gold spent</th>
+          <th>Score</th>
+          <th>Exact share</th>
+          <th>Marks</th>
+          <th>Mark value</th>
+          <th>Net after marks</th>
+        </tr></thead>
+        <tbody id="mkBody"></tbody>
+      </table>
+    </div>
+
+    <details class="prices">
+      <summary><span>Gold price assumptions &mdash; edit for your server</span>
+        <span class="tw" id="pTotal"></span></summary>
+      <p class="livebar" id="liveBar"></p>
+      <div class="pgrid" id="pGrid"></div>
+      <div class="paste">
+        <label for="pPaste">Paste prices from the game</label>
+        <p class="pnote">One item per line, name then price &mdash; <span class="num">Flask of Relentless Assault 132g</span>,
+          <span class="num">Super Mana Potion, 14</span> and <span class="num">Haste Potion 15g 50s</span> all parse.
+          Copy straight out of Auctionator, TSM or a guild sheet; unmatched lines are reported, not silently dropped.</p>
+        <textarea id="pPaste" rows="4" spellcheck="false" placeholder="Flask of Relentless Assault 132g&#10;Haste Potion 15g50s&#10;Super Mana Potion 14"></textarea>
+        <div class="pactions"><button type="button" id="btnPaste">Apply pasted prices</button>
+          <button type="button" id="btnLive">Restore live prices</button>
+          <span class="msg" id="pasteMsg"></span></div>
+      </div>
+      <p class="prow-note">Every price is per unit in gold. Coverage items are converted to units
+        first: a 100% flask raider is charged for 2 flasks over a 3:24 clear, 100% battle or guardian
+        elixir is 6 elixirs, 100% food is 8, weapon enhancement 6, scrolls 6. Healthstones and Mana
+        Emeralds are priced at zero because they are conjured, not bought. Defaults come from
+        Phase&nbsp;2&ndash;3 auction reporting: flasks 80&ndash;190g depending on server, combat
+        potions around 16g. A Shattrath flask is bought with a Mark rather than gold, so it is priced at
+        the Mark rate and shown separately &mdash; five of your raiders are already funding flasks that way.</p>
+      <div class="livetbl" id="liveTbl"></div>
+    </details>
+
+    <div class="sharebar">
+      <button type="button" id="btnShare">Copy share link</button>
+      <button type="button" id="btnReset">Reset to defaults</button>
+      <span class="msg" id="shareMsg">Settings ride in the link &mdash; paste it in guild chat and everyone sees the same split.</span>
+    </div>
+  </div>
+</section>
+<section id="ledger">
+  <div class="shead"><h2>The ledger</h2><p class="eyebrow">click any row for the full breakdown</p></div>
+  <p class="snote">Pulled directly from the log's own buff tables, bosses only &mdash; all 17 encounters
+    (9 kills, 8 wipes), trash excluded. Coverage columns are the
+    share of the 17 boss fights the buff was active on. A flask covers both elixir slots at once, so
+    <span class="num">Battle</span> and <span class="num">Guardian</span> below are the combined slot
+    coverage, and the separate <span class="num">Flask</span> column is informational &mdash; it shows how much of that
+    coverage came from a flask rather than an elixir, and a low number is not a fault.</p>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-view="score" aria-selected="true">Score &amp; coverage</button>
+    <button type="button" role="tab" data-view="cons" aria-selected="false">Every consumable</button>
+    <button type="button" role="tab" data-view="spend" aria-selected="false">Where the gold went</button>
+  </div>
+  <div class="tablewrap">
+    <table id="tbl"><thead id="th"></thead><tbody id="tb"></tbody></table>
+  </div>
+  <div class="legend">
+    <span><i class="swatch" style="background:var(--accent)"></i>90&ndash;100% covered</span>
+    <span><i class="swatch" style="background:var(--warn)"></i>70&ndash;89%</span>
+    <span><i class="swatch" style="background:var(--crit)"></i>under 70%</span>
+    <span>Tier A &ge;90 pts &middot; B &ge;80 &middot; C &ge;65 &middot; D under 65</span>
+  </div>
+</section>
+
+<section id="raid">
+  <div class="shead"><h2>Where the raid leaks</h2></div>
+  <p class="snote">Averaged across all 25 raiders. Four of the six categories are close to solved;
+    two are not.</p>
+  <div class="raidgrid">
+    <div class="panel">
+      <h3>Raid-wide coverage</h3>
+      <p class="sub">Mean share of the 17 boss fights with the buff active</p>
+      <div class="hbar" id="raidbars"></div>
+    </div>
+    <div class="panel">
+      <h3>The five findings</h3>
+      <p class="sub">What a raid lead should act on before next week</p>
+      <ul class="gaps">
+        <li><span class="big">18&times;</span><span><b>The top spender bought 18&times; as much as the bottom one.</b>
+          At live Anniversary prices Thundaqt spent about 785g against Õhm's 43g. That gap is the whole
+          argument for splitting Marks by spend rather than evenly &mdash; and it is far wider than
+          guessed prices suggested, because elixirs and food turned out to cost pennies while potions
+          and scrolls do not.</span></li>
+        <li><span class="big">8</span><span><b>Eight raiders used no scrolls at all.</b>
+          Scroll of Agility&nbsp;V and Strength&nbsp;V stack with flasks and every raid buff, cost a few
+          silver, and last 30 minutes. Raid average is 52.7% &mdash; the cheapest fix on this sheet.</span></li>
+        <li><span class="big">5</span><span><b>Five raiders ran an empty guardian slot on 40%+ of fights.</b>
+          Õhm had none for the entire raid; Likapally, Threatbull, Shoutofearth and Grazzyknoll sat
+          at 35&ndash;59%. Free stats going unclaimed every pull.</span></li>
+        <li><span class="big ok">57</span><span><b>Marks already spent on Shattrath flasks, by five raiders.</b>
+          Azzblast burned 17, Thotiana 16, Orixon 9, Pierogï 8, Donkin 7. They are converting Marks
+          into flasks rather than gold &mdash; which is exactly what the reimbursement is for, and a
+          reason their gold figure understates what the raid cost them.</span></li>
+        <li><span class="big ok">646</span><span><b>Party haste applications delivered by six leatherworkers.</b>
+          Donkin alone accounts for 237 at 3.95 buffs per drum. Grazzyknoll and Splïff wasted 4 and 9
+          drums on Tinnitus &mdash; casts that hit zero targets.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section id="method">
+  <div class="shead"><h2>How the score is built</h2></div>
+  <p class="snote">100 points of things every raider controls, plus bonuses for consumables only some
+    professions can bring, minus flags the analyzer raised for using the wrong item.</p>
+  <div class="std">
+    <table>
+      <thead><tr><th>Component</th><th>Weight</th><th>Source &amp; measure</th></tr></thead>
+      <tbody>
+        <tr><td>Battle elixir slot</td><td class="wt">18 pts</td><td>Share of the 17 boss fights with a battle elixir <em>or</em> flask active &mdash; a flask fills this slot on its own.</td></tr>
+        <tr><td>Guardian elixir slot</td><td class="wt">18 pts</td><td>Share with a guardian elixir <em>or</em> flask active. Same flask rule.</td></tr>
+        <tr><td>Food buff</td><td class="wt">12 pts</td><td>Share of fights Well Fed.</td></tr>
+        <tr><td>Weapon enhancement</td><td class="wt">12 pts</td><td>Oil, sharpening stone or poison on the weapon.</td></tr>
+        <tr><td>Scrolls</td><td class="wt">10 pts</td><td>Share of fights with any scroll active, from the log's own per-fight pass.</td></tr>
+        <tr><td>Active potions</td><td class="wt">22 pts</td><td>Haste, Destruction, Ironshield, every mana potion, Dark and Demonic Runes, Mana Emerald, Thistle Tea and Super Healing Potions, per fight. Full credit at 2.0 per fight.</td></tr>
+        <tr><td>Utility items</td><td class="wt">8 pts</td><td>Healthstones, Nightmare Seed, Flame Cap, Fel Blossom, Free Action Potion, bandages, Lei of Lilies, per fight. Full credit at 0.8 per fight.</td></tr>
+        <tr><td>Drums bonus</td><td class="wt">+8 max</td><td>Party haste applications actually delivered &mdash; drums used &times; buffs landed per drum. Donkin's 237 sets the ceiling.</td></tr>
+        <tr><td>Engineering bonus</td><td class="wt">+3 max</td><td>Damage from bombs, sappers and grenades. Thotiana's 107,315 sets the ceiling.</td></tr>
+        <tr><td>Gift of Arthas bonus</td><td class="wt">+2 max</td><td>Uptime of the raid-wide +8 damage-taken disease. Only Captrawr and Oddbird ran it.</td></tr>
+        <tr><td>Suboptimal flag</td><td class="wt">&minus;1.5 each</td><td>Wrong item for the slot &mdash; Elixir of the Mongoose over Major Agility, a generic Well Fed food, wizard oil on a healer.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose" style="margin-top:26px">
+    <h3>Why the 22-point potion pool isn't split by type</h3>
+    <p>A warrior can never drink a mana potion; a healer has no use for a Destruction Potion. Scoring
+      them in separate buckets would hand every role a category it structurally cannot win. Pooling
+      them measures the thing that <em>is</em> comparable across the roster: how many performance
+      consumables you actually swallowed per fight, whatever your class drinks. Potions share a
+      two-minute cooldown, so 2.0 per fight is a demanding but reachable bar &mdash; four raiders
+      cleared it.</p>
+    <h3>How gold spent is estimated</h3>
+    <p>Counted consumables are simply quantity &times; unit price. Coverage percentages are converted
+      to units first, using how long each buff lasts against a 3:24 clear: a flask runs two hours and
+      survives death, so 100% flask coverage is charged as 2 flasks; elixirs run an hour and are lost
+      on death, so 100% is 6; food and scrolls run 30 minutes, charged at 8 and 6; weapon
+      enhancement at 6. Conjured items &mdash; Healthstones from the warlocks, a mage's Mana Emeralds
+      &mdash; are priced at zero, because nobody bought them. Every price and unit count is editable
+      in the panel above, since server economies differ by more than double.</p>
+    <h3>Why Marks track spend rather than parse</h3>
+    <p>A Mark of the Illidari buys a Shattrath flask outright, and the Phase&nbsp;3 vendor trades one
+      for ten Haste or Destruction Potions. That makes a Mark roughly 160g of consumable value at
+      current potion prices, and it makes the distribution question simple: Marks are the raid paying
+      back the people who funded the raid. Splitting them evenly means a raider who brought nothing
+      gets the same rebate as one who spent 1,200g, which is the opposite of fair. The skew control
+      lets you decide how hard to lean into that; the tank floor exists because tanking costs money
+      whether or not the log shows a big potion count.</p>
+    <h3>Is the order robust?</h3>
+    <p>Every weight, cap and bonus ceiling was re-rolled 4,000 times at &plusmn;40% and the table
+      re-sorted each time. 23 of 25 raiders land within two places of their listed rank in at least
+      86% of runs; Õhm finishes 25th in 100% of them. The top and bottom of this list are not
+      artefacts of the weighting.</p>
+    <h3>Where the 17 comes from</h3>
+    <p>The analyzer reports coverage as percentages, not counts. Every distinct value on the sheet
+      &mdash; 6, 24, 35, 41, 53, 59, 65, 71, 82, 88, 94 &mdash; is an exact seventeenth. Tested
+      against denominators 15 through 19, 17 fits with roughly one-sixth the error of the next best,
+      and the Illidan footnote listing fight IDs up to 80 agrees.</p>
+  </div>
+</section>
+
+<section id="standard">
+  <div class="shead"><h2>The Phase 3 standard</h2></div>
+  <p class="snote">What the sheet grades against &mdash; the consumables a Black Temple raider is
+    expected to bring on TBC Anniversary Phase 3.</p>
+  <div class="std">
+    <table>
+      <thead><tr><th>Slot</th><th>Expected</th><th>Notes for Phase&nbsp;3</th></tr></thead>
+      <tbody>
+        <tr><td>Flask</td><td class="it">Relentless Assault (120 AP) &middot; Pure Death / Blinding Light (80 spell) &middot; Fortification (500 HP, 10 def) &middot; Mighty Restoration (25 mp5)</td><td>Two hours, survives death, and fills the battle <em>and</em> guardian slot on its own. Two elixirs usually out-stat it; the flask wins on wipe-heavy nights. The Shattrath versions cost one Mark each and work only inside SSC, TK, Hyjal, BT and Sunwell &mdash; five of your raiders already run them, 57 Marks' worth on this night alone.</td></tr>
+        <tr><td>Battle elixir</td><td class="it">Major Agility &middot; Major Strength &middot; Fel Strength &middot; Major Shadow/Firepower &middot; Adept's &middot; Healing Power</td><td>Elixir of the Mongoose and Major Strength both read as dated picks. <b>Elixir of Demonslaying</b> (+265 AP vs demons, 5 min) is being used properly by six raiders &mdash; Donkin 7, Thundaqt 4, Threatbull 4, Shoutofearth 4, Orixon 2, Woksauce 1 &mdash; on the demon bosses Supremus, Mother Shahraz and Illidan. Everyone else melee is leaving it on the table.</td></tr>
+        <tr><td>Guardian elixir</td><td class="it">Draenic Wisdom &middot; Major Mageblood &middot; Major Fortitude &middot; Gift of Arthas (tanks)</td><td>The most-skipped slot in this raid at 85.4% average. Gift of Arthas also lands a raid-wide +8 damage-taken disease, which is why it scores a bonus rather than just filling a slot.</td></tr>
+        <tr><td>Food</td><td class="it">Spicy Hot Talbuk &middot; Ravager Dog &middot; Roasted Clefthoof &middot; Blackened Basilisk &middot; Golden Fish Sticks &middot; Fisherman's Feast</td><td>Effectively solved &mdash; 98.1% raid average. A generic "Well Fed" still counts as covered but gets flagged as weak.</td></tr>
+        <tr><td>Weapon</td><td class="it">Superior Wizard Oil (42 spell) &middot; Superior / Brilliant Mana Oil &middot; Adamantite Sharpening Stone / Weightstone &middot; rogue poisons</td><td>Windfury Totem takes the same imbue slot, so melee parked with an enhancement shaman often read 0&ndash;6% here through no fault of their own. Rogues use Deadly Poison on bosses, which is why Orixon shows 100%.</td></tr>
+        <tr><td>Scrolls</td><td class="it">Agility V &middot; Strength V &middot; Protection V &middot; Spirit V &middot; Intellect V</td><td>+20&ndash;30 to a stat for 30 minutes, stacks with flasks and every raid buff, costs a few silver. Eight raiders used none, and an asterisk on the sheet means a rank below V was used.</td></tr>
+        <tr><td>Combat potion</td><td class="it">Haste Potion (400 haste, 15s) &middot; Destruction Potion (120 spell dmg, +2% crit, 15s) &middot; Ironshield Potion (2500 armor)</td><td>Haste Potion gives melee and ranged haste only &mdash; casters want Destruction. All potions share one two-minute cooldown, so a four-minute boss supports a pre-pot plus one or two more.</td></tr>
+        <tr><td>Mana &amp; sustain</td><td class="it">Super Mana Potion &middot; Demonic / Dark Rune &middot; Mana Emerald &middot; Thistle Tea &middot; Super Healing Potion</td><td>Runes sit on their own cooldown, separate from potions &mdash; a mana user should alternate both rather than pick one. Fel Mana Potion returns more but debuffs spell damage and healing.</td></tr>
+        <tr><td>Drums</td><td class="it">Drums of Battle &mdash; 80 haste to the party, 30s, 8-yard radius</td><td>Leatherworking 350+, and the two-minute Tinnitus debuff means drumming an already-buffed party burns a charge for nothing. Phase 1&ndash;3 use the older short-radius version, so standing close matters.</td></tr>
+        <tr><td>Situational</td><td class="it">Flame Cap &middot; Nightmare Seed &middot; Free Action Potion &middot; Fel Blossom &middot; Healthstone &middot; bandages &middot; school protection potions</td><td>Free Action Potions replace haste potions on stun-heavy pulls. Healthstones are free from the warlocks and five raiders still used none. Frost, Fire and Shadow protection potions are the per-boss layer this log shows no sign of.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="caveats">
+  <div class="shead"><h2>Read these before you post it</h2></div>
+  <div class="cav">
+    <article class="info">
+      <h4>Where the prices come from</h4>
+      <p>Every default on this page is a real TBC Anniversary auction price for the US region's Horde
+        side, scraped from BootyBayBroker's hourly TradeSkillMaster feed on 6 September 2026 &mdash;
+        58 items, listed in full under the price panel. Blizzard's own Classic auction endpoints have
+        returned 404 for the <code>dynamic-classic1x</code> namespaces since late 2024 and are still
+        unfixed, so there is no first-party API to poll, and nothing realm-specific for Dreamscythe:
+        these are region-wide. Prices move hourly. Edit any field, paste a list from your own
+        Auctionator scan, or hit <em>Restore live prices</em> to come back to this snapshot.</p>
+    </article>
+    <article>
+      <h4>A Mark is one redemption, not three</h4>
+      <p>One Mark buys a Shattrath flask <em>or</em> ten Haste Potions <em>or</em> ten Destruction
+        Potions &mdash; never a combination. At today's prices those are worth 92g, 82g and 82g, so
+        which one you take changes what a Mark is worth. The toggle above sets it; <em>Best</em> takes
+        the highest of the three. Note the flask is only the best deal for a caster &mdash; Relentless
+        Assault at 77g is worth less than ten Haste Potions.</p>
+    </article>
+    <article class="info">
+      <h4>These numbers came from the log itself</h4>
+      <p>Every buff on this page was read out of the report's own boss-only buff tables, one raider at
+        a time, and cross-checked against the workbooks. The counts agree: Destruction Potions 20/21/23
+        for Pierogï, Azzblast and Kapisce, haste potions 29 for Donkin, 21 for Threatbull. The fight
+        list confirms 17 boss encounters &mdash; 9 kills and 8 wipes.</p>
+    </article>
+    <article>
+      <h4>Celions and the Windfury problem</h4>
+      <p>6% weapon enhancement is the single biggest deduction on his card, but Windfury Totem takes
+        the same imbue slot as a sharpening stone, so a ret paladin in the enhancement shamans' party
+        physically cannot keep one up. Drop that category and he scores 72.2 and ranks 17th. Check the
+        party layout before treating it as a prep failure.</p>
+    </article>
+    <article>
+      <h4>Conjured items are free, and priced that way</h4>
+      <p>Healthstones and Mana Emeralds cost the user nothing, so they earn score but no gold. That is
+        deliberate &mdash; Azzblast's 37 Mana Emeralds shouldn't buy him Marks that Kapisce paid cash
+        for. The warlocks who supplied the stones aren't credited for them either.</p>
+    </article>
+    <article class="info">
+      <h4>Missing combatant info</h4>
+      <p>The analyzer warns that some Tier 6 fights lose the <code>combatantInfo</code> block carrying
+        consumable data when a logger is far from the boss at pull. A raider at 94% rather than 100%
+        may be a logging artefact rather than a missed flask.</p>
+    </article>
+    <article class="info">
+      <h4>Bosses only, Shahraz partly excluded</h4>
+      <p>Trash is excluded from everything here. The gear audit additionally skips Mother Shahraz so
+        shadow resistance sets don't register as errors &mdash; but her fight still counts toward
+        consumable coverage.</p>
+    </article>
+    <article class="info">
+      <h4>Scroll data source</h4>
+      <p>Scroll coverage is the analyzer's own per-fight pass over this log, including which scroll
+        types and where a rank below V was used. Warcraft Logs itself sits behind a human-verification
+        check, so nothing here was re-scraped from the site directly.</p>
+    </article>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <p class="eyebrow">Sources</p>
+    <ul class="srcs">
+      <li>CLA &amp; RPB workbooks &mdash; Team Rapid Release, Black Temple, 06 Sep 2026 (report <span class="num">HTxgKGcWPkN67LmZ</span>)</li>
+      <li><a href="https://www.wowhead.com/tbc/item=32901/shattrath-flask-of-relentless-assault">Shattrath Flask of Relentless Assault &mdash; 1 Mark</a></li>
+      <li><a href="https://warcraft.wiki.gg/wiki/Mark_of_the_Illidari">Mark of the Illidari &mdash; Warcraft Wiki</a></li>
+      <li><a href="https://instant-carry.com/blog/tbc-anniversary-phase-3-could-slash-consumable-costs-haste-destruction-potions-added-for-marks-of-the-illidari/">Phase 3 Marks vendor: 10 potions per Mark</a></li>
+      <li><a href="https://timesaver.gg/blog/tbc-anniversary-consumables-cost">TBC Anniversary consumable costs</a></li>
+      <li><a href="https://www.iggm.com/news/wow-tbc-classic-anniversary-phase-2-consumable-prices-are-broken">Anniversary consumable price reporting</a></li>
+      <li><a href="https://www.wowhead.com/tbc/item=22839/destruction-potion">Destruction Potion &amp; the shared potion cooldown</a></li>
+      <li><a href="https://www.wowhead.com/tbc/item=9224/elixir-of-demonslaying">Elixir of Demonslaying</a></li>
+      <li><a href="https://www.tbcguides.gg/rogue-p3-dps-guide/">Phase 3 melee consumable practice</a></li>
+      <li><a href="https://www.wowhead.com/tbc/item=29529/drums-of-battle">Drums of Battle</a> &middot; <a href="https://www.wowhead.com/tbc/spell=8512/windfury-totem">Windfury Totem</a> &middot; <a href="https://www.wowhead.com/tbc/item=9088/gift-of-arthas">Gift of Arthas</a></li>
+      <li><a href="https://expcarry.com/tbc-anniversary-tier-6-raid-consumables-checklist">Tier 6 consumables checklist</a></li>
+    </ul>
+  </div>
+</footer>
+<script>window.__RANK__={"players":[{"rank":4,"key":"Thundaqt","name":"Thundaqt","role":"Hunter","score":95.8,"tier":"A","tank":false,"flask":53,"battleE":35,"guardE":35,"battle":88,"guard":88,"food":94,"weapon":88,"scroll":94,"scrollTypes":"Agi,Str","actRate":2.35,"utilRate":1.35,"drumScore":0,"drumWaste":0,"engiDmg":102567,"flags":[],"verdict":"Burns more consumables per fight than anyone: 27 haste potions, 18 Flame Caps, 7 runes, 6 mana potions, plus 102k damage from sappers and bombs. Coverage sits at 88% rather than 100% across the board, which is what keeps him off the top spot.","engiDetail":"10 Super Sapper, 9 Goblin Sapper, 1 Goblin Land Mine","cov":{"flask":1.06,"battle":2.1,"guard":2.1,"food":7.52,"weapon":5.28,"scroll":5.64,"flaskMark":0.0},"counts":{"haste":27,"smana":6,"rune":7,"hs":4,"flame":18,"band":1,"ssap":10,"gsap":9,"mine":1},"parts":{"battle":15.8,"guard":15.8,"food":11.3,"weapon":10.6,"scroll":9.4,"active":22,"util":8,"drum":0.0,"engi":2.9,"goa":0.0,"pen":-0.0},"eng":20,"gold":785,"markFlasks":0,"demon":4,"chrom":0,"items":[["Drums of Battle",8,6.5],["Well Fed (food)",16,92.46],["Scroll of Agility",16,84.63],["Flask of Relentless Assault",9,47.51],["Major Agility",3,27.01],["Elixir of Demonslaying",4,21.21],["Scroll of Strength",3,14.15],["Haste Potion",26,11.73],["Flame Cap",7,11.71],["Scourgebane Draught",1,1.62],["Greater Versatility",6,49.58]]},{"rank":11,"key":"Pierogi","name":"Pierogï","role":"Balance Druid","score":84.5,"tier":"B","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":3.12,"utilRate":0.06,"drumScore":0,"drumWaste":0,"engiDmg":67679,"flags":[],"verdict":"Highest raw potion throughput in the raid at 3.1 per fight — 20 Destruction Potions, 15 runes, 18 mana potions — plus 67k in bomb damage and 100% flask, food and oil coverage. Zero scrolls all raid is the single fixable item.","engiDetail":"13 Fel Iron Bomb, 4 Goblin Sapper, 1 Thornling Seed","cov":{"flask":1.06,"battle":0.0,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":0.0,"flaskMark":0.94},"counts":{"destr":20,"smana":9,"omana":9,"rune":15,"hs":1,"felbomb":13,"gsap":4,"thorn":1},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":0.0,"active":22,"util":0.6,"drum":0.0,"engi":1.9,"goa":0.0,"pen":-0.0},"eng":18,"gold":677,"markFlasks":8,"demon":0,"chrom":0,"items":[["Well Fed (food)",17,94.19],["Blinding Light of Shattrath",8,51.06],["Flask of Blinding Light",9,44.55],["Destruction Potion",20,9.03],["Noggenfogger Elixir",3,13.22],["Eye of the Night",4,20.56]]},{"rank":13,"key":"Threatbull","name":"Threatbull","role":"Warrior","score":82.1,"tier":"B","tank":false,"flask":59,"battleE":41,"guardE":0,"battle":100,"guard":59,"food":100,"weapon":100,"scroll":94,"scrollTypes":"Agi,Str","actRate":1.29,"utilRate":0.41,"drumScore":0,"drumWaste":0,"engiDmg":60779,"flags":[],"verdict":"94% scrolls, 100% food and weapon, 21 haste potions and 61k in engineering damage. The problem is the guardian elixir slot: 0% guardian elixir and only 59% flask means 41% of fights ran with a completely empty guardian slot.","engiDetail":"16 Super Sapper, 10 Fel Iron Bomb, 6 Goblin Sapper","cov":{"flask":1.18,"battle":2.46,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":5.64,"flaskMark":0.0},"counts":{"haste":21,"sheal":1,"hs":7,"felbomb":10,"ssap":16,"gsap":6,"thorn":1},"parts":{"battle":18.0,"guard":10.6,"food":12.0,"weapon":12.0,"scroll":9.4,"active":14.2,"util":4.1,"drum":0.0,"engi":1.7,"goa":0.0,"pen":-0.0},"eng":33,"gold":615,"markFlasks":0,"demon":4,"chrom":1,"items":[["Drums of Battle",23,17.79],["Scroll of Agility",16,78.02],["Scroll of Strength",16,78.02],["Well Fed (food)",16,77.48],["Flask of Relentless Assault",9,44.55],["Elixir of Demonslaying",4,20.27],["Elixir of the Mongoose",5,12.94],["Haste Potion",21,8.88],["Flask of Chromatic Wonder",1,5.09]]},{"rank":2,"key":"Cowboy","name":"Cowboy","role":"Hunter","score":96.7,"tier":"A","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":100,"scrollTypes":"Agi","actRate":1.82,"utilRate":0.59,"drumScore":22,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"The only clean sheet in the raid: 100% on all five coverage columns, including scrolls. Flasked every single fight, ate every fight, oiled every fight, scrolled every fight. Adds 19 haste potions, 10 healthstones and 18 drums on top.","engiDetail":"","cov":{"flask":2.0,"battle":0.0,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":6.0,"flaskMark":0.0},"counts":{"haste":19,"smana":4,"felmana":8,"hs":10,"drum":18},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":10.0,"active":20.1,"util":5.9,"drum":0.7,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":615,"markFlasks":0,"demon":0,"chrom":1,"items":[["Drums of Battle",20,17.57],["Well Fed (food)",17,95.82],["Scroll of Agility",17,95.82],["Flask of Relentless Assault",16,94.91],["Haste Potion",19,8.58],["Fel Mana Potion",8,5.16],["Flask of Chromatic Wonder",1,5.09],["Flip Out",4,19.43],["Yaaarrrr",2,9.36]]},{"rank":7,"key":"Woksauce","name":"Woksauce","role":"Warrior","score":91.5,"tier":"A","tank":false,"flask":94,"battleE":6,"guardE":0,"battle":100,"guard":94,"food":100,"weapon":100,"scroll":94,"scrollTypes":"Agi,Str","actRate":1.35,"utilRate":0.65,"drumScore":0,"drumWaste":0,"engiDmg":64017,"flags":[],"verdict":"94% flask uptime, 100% food, weapon and 94% scrolls, 23 haste potions, 11 healthstones and 64k in engineering damage. The most complete warrior of the three by a wide margin.","engiDetail":"8 Super Sapper, 8 Fel Iron Bomb, 5 Goblin Sapper, 1 Arcane Bomb","cov":{"flask":1.88,"battle":0.36,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":5.64,"flaskMark":0.0},"counts":{"haste":23,"hs":11,"arcbomb":1,"felbomb":8,"ssap":8,"gsap":5,"thorn":1},"parts":{"battle":18.0,"guard":16.9,"food":12.0,"weapon":12.0,"scroll":9.4,"active":14.9,"util":6.5,"drum":0.0,"engi":1.8,"goa":0.0,"pen":-0.0},"eng":23,"gold":578,"markFlasks":0,"demon":1,"chrom":0,"items":[["Drums of Battle",29,25.51],["Flask of Relentless Assault",16,94.91],["Well Fed (food)",17,86.63],["Scroll of Agility",17,81.89],["Scroll of Strength",17,81.86],["Haste Potion",23,9.65],["Elixir of Demonslaying",1,5.09]]},{"rank":16,"key":"Thotiana","name":"Thotiana","role":"Prot Paladin (tank)","score":72.4,"tier":"C","tank":true,"flask":88,"battleE":0,"guardE":0,"battle":88,"guard":88,"food":100,"weapon":65,"scroll":82,"scrollTypes":"Agi,Prot","actRate":0.59,"utilRate":0.47,"drumScore":0,"drumWaste":0,"engiDmg":107315,"flags":["Well Fed (weak food)"],"verdict":"Top engineering contributor at 107k damage, 8 Nightmare Seeds and 4 Ironshield Potions show real tank awareness. But 65% weapon enhancement, a 'Well Fed' generic food flag, and only 6 potions of any kind besides the seeds leave a lot on the table.","engiDetail":"10 Fel Iron Bomb, 6 Super Sapper, 4 Goblin Sapper, 1 Arcane Bomb","cov":{"flask":0.0,"battle":0.0,"guard":0.0,"food":8.0,"weapon":3.9,"scroll":4.92,"flaskMark":1.76},"counts":{"haste":4,"iron":4,"smana":2,"seed":8,"arcbomb":1,"felbomb":10,"ssap":6,"gsap":4},"parts":{"battle":15.8,"guard":15.8,"food":12.0,"weapon":7.8,"scroll":8.2,"active":6.5,"util":4.7,"drum":0.0,"engi":3.0,"goa":0.0,"pen":-1.5},"eng":21,"gold":519,"markFlasks":16,"demon":0,"chrom":0,"items":[["Drums of Battle",2,1.8],["Well Fed (food)",16,87.22],["Blinding Light of Shattrath",16,84.45],["Scroll of Agility",14,78.17],["Haste Potion",4,1.8],["Scroll of Protection",8,12.59],["Ironshield Potion",4,10.53],["Nightmare Seed",4,3.61]]},{"rank":8,"key":"Junnox","name":"Junnox","role":"Warlock","score":89.6,"tier":"B","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":1.88,"utilRate":0.71,"drumScore":0,"drumWaste":0,"engiDmg":65588,"flags":[],"verdict":"Perfect coverage on the four core columns and strong active use — 16 mana potions, 11 Destruction Potions, 8 healthstones, 5 runes, 3 bandages, plus 65k engineering damage. Used zero scrolls all night, which is the entire gap between this and a top-three finish.","engiDetail":"5 Super Sapper, 1 Arcane Bomb, 1 Adamantite Grenade, 1 Goblin Sapper","cov":{"flask":2.0,"battle":0.0,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":0.0,"flaskMark":0.0},"counts":{"destr":11,"smana":16,"rune":5,"hs":8,"freeact":1,"band":3,"arcbomb":1,"adagren":1,"ssap":5,"gsap":1},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":0.0,"active":20.7,"util":7.1,"drum":0.0,"engi":1.8,"goa":0.0,"pen":-0.0},"eng":8,"gold":480,"markFlasks":0,"demon":0,"chrom":1,"items":[["Well Fed (food)",17,95.58],["Flask of Pure Death",16,94.91],["Flask of Chromatic Wonder",1,5.09],["Destruction Potion",10,4.51]]},{"rank":15,"key":"Zev","name":"Zèv","role":"Warlock","score":79.8,"tier":"C","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":1.53,"utilRate":0.29,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"21 Destruction Potions and 100% flask, food and weapon coverage. Zero scrolls, only 5 runes and 5 healthstones — the floor is solid, the ceiling is untouched.","engiDetail":"","cov":{"flask":2.0,"battle":0.0,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":0.0,"flaskMark":0.0},"counts":{"destr":21,"rune":5,"hs":5,"thorn":1},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":0.0,"active":16.8,"util":2.9,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":1,"gold":428,"markFlasks":0,"demon":0,"chrom":1,"items":[["Flask of Pure Death",16,94.91],["Well Fed (food)",17,84.81],["Flask of Chromatic Wonder",1,5.09],["Destruction Potion",21,9.36]]},{"rank":6,"key":"Kapisce","name":"Kapisce","role":"Shadow Priest","score":92.9,"tier":"A","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":100,"weapon":94,"scroll":94,"scrollTypes":"Spi","actRate":1.82,"utilRate":0.41,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"23 Destruction Potions, the most of any caster, with 100% flask and food coverage and 94% on scrolls and weapon oil. Nothing meaningful missing.","engiDetail":"","cov":{"flask":2.0,"battle":0.0,"guard":0.0,"food":8.0,"weapon":5.64,"scroll":5.64,"flaskMark":0.0},"counts":{"destr":23,"smana":8,"hs":7},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":11.3,"scroll":9.4,"active":20.1,"util":4.1,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":427,"markFlasks":0,"demon":0,"chrom":2,"items":[["Drums of Battle",14,12.03],["Well Fed (food)",17,97.15],["Scroll of Spirit",16,93.61],["Flask of Pure Death",15,90.87],["Flask of Chromatic Wonder",2,9.13],["Destruction Potion",23,9.75]]},{"rank":1,"key":"Donkin","name":"Donkin","role":"Enh Shaman","score":100.1,"tier":"A","tank":false,"flask":35,"battleE":53,"guardE":47,"battle":88,"guard":82,"food":100,"weapon":100,"scroll":94,"scrollTypes":"Agi,Str,Str*","actRate":2.12,"utilRate":0.76,"drumScore":237,"drumWaste":0,"engiDmg":0,"flags":["Elixir of the Mongoose"],"verdict":"Carries the raid's drum load — 60 drums, 3.95 buffs each, 237 party haste applications, more than the other five leatherworkers combined can match per-drum. Backs it with the highest haste-potion count in the raid (29). Only blemish: Elixir of the Mongoose instead of Major Agility, and a split flask/elixir habit that leaves 12% of fights uncovered.","engiDetail":"","cov":{"flask":0.0,"battle":3.18,"guard":2.82,"food":8.0,"weapon":6.0,"scroll":5.64,"flaskMark":0.7},"counts":{"haste":29,"smana":7,"hs":13,"drum":60,"thorn":1},"parts":{"battle":15.8,"guard":14.8,"food":12.0,"weapon":12.0,"scroll":9.4,"active":22,"util":7.6,"drum":8.0,"engi":0.0,"goa":0.0,"pen":-1.5},"eng":1,"gold":422,"markFlasks":7,"demon":7,"chrom":1,"items":[["Drums of Battle",33,27.91],["Well Fed (food)",17,86.15],["Scroll of Strength",15,53.45],["Scroll of Agility",15,53.44],["Elixir of Draenic Wisdom",8,46.95],["Elixir of Demonslaying",7,30.67],["Relentless Assault of Shattrath",7,26.13],["Scroll of Strength",2,21.99],["Major Agility",4,15.05],["Haste Potion",29,12.96],["Flask of Chromatic Wonder",1,5.09],["Elixir of the Mongoose",1,4.71],["Scourgebane Draught",1,1.26]]},{"rank":14,"key":"Azzblast","name":"Azzblast","role":"Mage","score":81.3,"tier":"B","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":94,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":4.12,"utilRate":0.0,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"100% flask and weapon coverage, 21 Destruction Potions and 37 Mana Emeralds. Two gaps: zero scrolls all raid, and a Thornling Seed and Stratholme Holy Water are the extent of the utility kit.","engiDetail":"","cov":{"flask":0.0,"battle":0.0,"guard":0.0,"food":7.52,"weapon":6.0,"scroll":0.0,"flaskMark":2.0},"counts":{"destr":21,"smana":12,"emerald":37,"thorn":1,"holywater":1},"parts":{"battle":18.0,"guard":18.0,"food":11.3,"weapon":12.0,"scroll":0.0,"active":22,"util":0.0,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":2,"gold":421,"markFlasks":17,"demon":0,"chrom":0,"items":[["Drums of Battle",9,7.9],["Blinding Light of Shattrath",17,94.91],["Well Fed (food)",16,90.37],["Destruction Potion",21,9.48]]},{"rank":9,"key":"Planet","name":"Plánet","role":"Resto Shaman","score":89.1,"tier":"B","tank":false,"flask":0,"battleE":100,"guardE":100,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":100,"scrollTypes":"Prot,Spi","actRate":1.41,"utilRate":0.0,"drumScore":105,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"100% on every coverage column including scrolls, and 34 drums delivering 105 party buffs. Held back only by modest potion volume — 12 mana potions and 12 runes across 17 fights, and no healthstones at all.","engiDetail":"","cov":{"flask":0.0,"battle":6.0,"guard":6.0,"food":8.0,"weapon":6.0,"scroll":6.0,"flaskMark":0.0},"counts":{"smana":12,"rune":12,"drum":34},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":10.0,"active":15.5,"util":0.0,"drum":3.5,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":320,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",23,19.12],["Elixir of Draenic Wisdom",17,98.01],["Scroll of Spirit",17,98.01],["Kreeg's Stout Beatdown",11,62.89],["Scroll of Protection",17,98.01],["Elixir of Healing Power",17,98.01],["Well Fed (food)",17,98.01]]},{"rank":12,"key":"Bmztilt","name":"Bmztilt","role":"Resto Druid (heal)","score":84.4,"tier":"B","tank":false,"flask":6,"battleE":94,"guardE":94,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":82,"scrollTypes":"Spi","actRate":1.47,"utilRate":0.0,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"100% battle, guardian, food and weapon coverage with 82% scrolls, and 25 mana potions and runes across the night. No healthstones, no drums, no utility consumables — a clean but narrow kit.","engiDetail":"","cov":{"flask":0.12,"battle":5.64,"guard":5.64,"food":8.0,"weapon":6.0,"scroll":4.92,"flaskMark":0.0},"counts":{"smana":13,"rune":12},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":8.2,"active":16.2,"util":0.0,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":316,"markFlasks":0,"demon":0,"chrom":1,"items":[["Drums of Battle",11,8.66],["Elixir of Draenic Wisdom",16,87.97],["Scroll of Spirit",14,66.33],["Flask of Chromatic Wonder",1,5.09],["Well Fed (food)",17,92.91],["Elixir of Healing Power",16,87.97],["Noggenfogger Elixir",12,58.18]]},{"rank":3,"key":"Orixon","name":"Orixon","role":"Rogue","score":95.8,"tier":"A","tank":false,"flask":59,"battleE":41,"guardE":41,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":71,"scrollTypes":"Agi,Str","actRate":1.88,"utilRate":1.35,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"Textbook rogue prep — 100% battle, guardian, food and weapon enhancement, plus 16 healthstones, 13 haste potions, 10 Thistle Teas, 9 Super Healing Potions and 4 bandages. Highest utility-consumable rate in the raid. Scrolls are the only gap at 71%.","engiDetail":"","cov":{"flask":0.0,"battle":2.46,"guard":2.46,"food":8.0,"weapon":6.0,"scroll":4.26,"flaskMark":1.18},"counts":{"haste":13,"sheal":9,"thistle":10,"hs":16,"felbl":1,"freeact":2,"band":4},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":7.1,"active":20.7,"util":8,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":315,"markFlasks":9,"demon":2,"chrom":1,"items":[["Drums of Battle",3,2.6],["Scroll of Strength",12,64.84],["Scroll of Agility",12,64.84],["Relentless Assault of Shattrath",9,43.48],["Major Agility",5,23.99],["Elixir of Demonslaying",2,11.25],["Haste Potion",13,5.87],["Flask of Chromatic Wonder",1,5.09],["Elixir of Major Fortitude",7,48.82],["Well Fed (food)",16,92.3]]},{"rank":21,"key":"Celions","name":"Celions","role":"Ret Paladin","score":64.2,"tier":"D","tank":false,"flask":100,"battleE":0,"guardE":0,"battle":100,"guard":100,"food":100,"weapon":6,"scroll":24,"scrollTypes":"Agi,Str","actRate":0.76,"utilRate":0.47,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"Flasked 100% of fights and ate 100% of fights, then stopped. 6% weapon enhancement, 24% scrolls, 10 haste potions. See the Windfury caveat below — if he sits in the enhancement shaman party his real score is closer to 72 and rank 17.","engiDetail":"","cov":{"flask":2.0,"battle":0.0,"guard":0.0,"food":8.0,"weapon":0.36,"scroll":1.44,"flaskMark":0.0},"counts":{"haste":10,"smana":2,"rune":1,"hs":5,"seed":2,"band":1},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":0.7,"scroll":2.4,"active":8.4,"util":4.7,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":303,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",25,20.05],["Flask of Relentless Assault",17,100.0],["Well Fed (food)",17,79.82],["Scroll of Strength",4,23.92],["Scroll of Agility",1,4.93],["Haste Potion",10,4.51],["Nightmare Seed",2,1.8]]},{"rank":5,"key":"Spliff","name":"Splïff","role":"Resto Shaman","score":92.9,"tier":"A","tank":false,"flask":0,"battleE":100,"guardE":100,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":94,"scrollTypes":"Spi","actRate":1.94,"utilRate":0.35,"drumScore":49,"drumWaste":9,"engiDmg":0,"flags":["Superior Wizard Oil","Superior Mana Oil"],"verdict":"27 Super Mana Potions is the highest sustain count in the raid, on top of perfect 100% battle, guardian, food and weapon coverage and 32 drums. Docked for running Superior Wizard Oil alongside Superior Mana Oil, and 9 of 32 drums landed on Tinnitus — wasted casts.","engiDetail":"","cov":{"flask":0.0,"battle":6.0,"guard":6.0,"food":8.0,"weapon":6.0,"scroll":5.64,"flaskMark":0.0},"counts":{"smana":27,"rune":6,"hs":6,"drum":32},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":9.4,"active":21.4,"util":3.5,"drum":1.7,"engi":0.0,"goa":0.0,"pen":-3.0},"eng":0,"gold":275,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",28,23.49],["Elixir of Draenic Wisdom",17,94.77],["Scroll of Spirit",16,90.06],["Well Fed (food)",17,94.77],["Elixir of Healing Power",17,94.77],["Noggenfogger Elixir",2,8.3]]},{"rank":10,"key":"Caicey","name":"Caicey","role":"Priest (heal)","score":84.9,"tier":"B","tank":false,"flask":0,"battleE":100,"guardE":100,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":100,"scrollTypes":"Spi","actRate":1.35,"utilRate":0.0,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"One of only three players at 100% across all five coverage columns. The prep is flawless; the throughput is not — 16 mana potions and 7 runes is roughly 1.4 consumables per fight, and zero healthstones, drums or utility items.","engiDetail":"","cov":{"flask":0.0,"battle":6.0,"guard":6.0,"food":8.0,"weapon":6.0,"scroll":6.0,"flaskMark":0.0},"counts":{"smana":16,"rune":7,"thorn":1},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":10.0,"active":14.9,"util":0.0,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":1,"gold":257,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",13,10.64],["Scroll of Spirit",17,96.25],["Elixir of Draenic Wisdom",17,96.25],["Well Fed (food)",17,96.25],["Elixir of Healing Power",17,96.25]]},{"rank":20,"key":"Novick","name":"Novick","role":"Warlock","score":66.3,"tier":"C","tank":false,"flask":94,"battleE":0,"guardE":0,"battle":94,"guard":94,"food":88,"weapon":94,"scroll":0,"scrollTypes":"-","actRate":0.59,"utilRate":0.41,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"Nothing is badly wrong and nothing is good — 94% flask, 88% food, 94% weapon, and then 5 Destruction Potions, 5 mana potions and 6 healthstones across the entire raid. Zero scrolls. The lowest-effort passing grade in the roster.","engiDetail":"","cov":{"flask":1.88,"battle":0.0,"guard":0.0,"food":7.04,"weapon":5.64,"scroll":0.0,"flaskMark":0.0},"counts":{"destr":5,"smana":5,"hs":6,"band":1},"parts":{"battle":16.9,"guard":16.9,"food":10.6,"weapon":11.3,"scroll":0.0,"active":6.5,"util":4.1,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":225,"markFlasks":0,"demon":0,"chrom":0,"items":[["Flask of Pure Death",16,95.29],["Well Fed (food)",15,88.39],["Destruction Potion",5,2.26]]},{"rank":18,"key":"Likapally","name":"Likapally","role":"Holy Paladin","score":69.7,"tier":"C","tank":false,"flask":0,"battleE":100,"guardE":35,"battle":100,"guard":35,"food":94,"weapon":100,"scroll":65,"scrollTypes":"Spi","actRate":0.94,"utilRate":0.53,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"100% battle elixir and weapon enhancement, but the guardian slot sits at 35% — no flask at all, and no guardian elixir on 11 of 17 fights. 16 mana potions is respectable; everything else is thin.","engiDetail":"","cov":{"flask":0.0,"battle":6.0,"guard":2.1,"food":7.52,"weapon":6.0,"scroll":3.9,"flaskMark":0.0},"counts":{"smana":16,"hs":7,"lei":2},"parts":{"battle":18.0,"guard":6.3,"food":11.3,"weapon":12.0,"scroll":6.5,"active":10.4,"util":5.3,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":160,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",8,6.93],["Scroll of Spirit",11,40.75],["Elixir of Draenic Wisdom",6,29.37],["Elixir of Healing Power",17,90.28],["Well Fed (food)",16,86.79]]},{"rank":19,"key":"Captrawr","name":"Captrawr","role":"Druid tank","score":69.5,"tier":"C","tank":true,"flask":12,"battleE":88,"guardE":76,"battle":100,"guard":88,"food":100,"weapon":94,"scroll":53,"scrollTypes":"Agi*,Prot*,Str*","actRate":0.35,"utilRate":0.12,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"81 applications of Gift of Arthas at 40% uptime is a genuine raid-wide contribution most tanks skip, and coverage is strong at 100/88/100/94. Undone by volume: 4 haste potions, 2 Ironshield Potions and 2 healthstones over 17 boss fights, and rank-IV scrolls on 53% of fights.","engiDetail":"","cov":{"flask":0.24,"battle":5.28,"guard":4.56,"food":8.0,"weapon":5.64,"scroll":3.18,"flaskMark":0.0},"counts":{"haste":4,"iron":2,"hs":2,"thorn":1},"parts":{"battle":18.0,"guard":15.8,"food":12.0,"weapon":11.3,"scroll":5.3,"active":3.9,"util":1.2,"drum":0.0,"engi":0.0,"goa":2.0,"pen":-0.0},"eng":1,"gold":140,"markFlasks":0,"demon":0,"chrom":2,"items":[["Drums of Battle",8,6.56],["Major Agility",15,67.3],["Scroll of Agility",9,56.81],["Flask of Chromatic Wonder",2,24.89],["Scroll of Strength",3,20.66],["Haste Potion",4,1.81],["Well Fed (food)",17,92.13],["Scroll of Protection",9,56.81],["Ironshield Potion",2,4.92],["Gift of Arthas",13,61.17]]},{"rank":24,"key":"Shoutofearth","name":"Shoutofearth","role":"Warrior","score":57.6,"tier":"D","tank":false,"flask":59,"battleE":41,"guardE":0,"battle":100,"guard":59,"food":100,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":0.06,"utilRate":0.59,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":["Elixir of Major Strength"],"verdict":"100% food and weapon enhancement, and that is the end of the good news. Zero guardian elixir with only 59% flask, zero scrolls, zero haste potions across 17 fights, and Elixir of Major Strength flagged as the wrong battle elixir. One Super Healing Potion was the only potion used all raid.","engiDetail":"","cov":{"flask":1.18,"battle":2.46,"guard":0.0,"food":8.0,"weapon":6.0,"scroll":0.0,"flaskMark":0.0},"counts":{"sheal":1,"hs":10,"thorn":1},"parts":{"battle":18.0,"guard":10.6,"food":12.0,"weapon":12.0,"scroll":0.0,"active":0.6,"util":5.9,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-1.5},"eng":1,"gold":129,"markFlasks":0,"demon":4,"chrom":0,"items":[["Drums of Battle",24,20.14],["Well Fed (food)",17,92.11],["Flask of Relentless Assault",10,49.64],["Elixir of Demonslaying",4,24.21],["Major Strength",5,18.83]]},{"rank":17,"key":"Masun","name":"Masun","role":"Enh Shaman","score":71.8,"tier":"C","tank":false,"flask":0,"battleE":100,"guardE":100,"battle":100,"guard":100,"food":100,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":0.47,"utilRate":0.18,"drumScore":144,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"144 party haste applications from 38 drums at 3.79 buffs each — the second-best drum record in the raid — and perfect 100% coverage on battle, guardian, food and weapon. Then it stops: zero scrolls, 8 mana potions, 3 healthstones, no haste potions.","engiDetail":"","cov":{"flask":0.0,"battle":6.0,"guard":6.0,"food":8.0,"weapon":6.0,"scroll":0.0,"flaskMark":0.0},"counts":{"smana":8,"hs":3,"drum":38},"parts":{"battle":18.0,"guard":18.0,"food":12.0,"weapon":12.0,"scroll":0.0,"active":5.2,"util":1.8,"drum":4.9,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":0,"gold":99,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",30,24.2],["Elixir of Draenic Wisdom",17,91.95],["Adept's Elixir",14,63.7],["Well Fed (food)",17,45.97],["Major Agility",3,28.25]]},{"rank":22,"key":"Oddbird","name":"Oddbird","role":"Druid tank","score":58.5,"tier":"D","tank":true,"flask":12,"battleE":76,"guardE":76,"battle":88,"guard":88,"food":88,"weapon":88,"scroll":35,"scrollTypes":"Prot","actRate":0.0,"utilRate":0.06,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":[],"verdict":"Gift of Arthas at 33% uptime is the one bright spot. Otherwise: 88% across the board rather than 100%, 35% scrolls, and — remarkably — not a single potion or rune of any kind across 17 boss fights. One healthstone all night.","engiDetail":"","cov":{"flask":0.24,"battle":4.56,"guard":4.56,"food":7.04,"weapon":5.28,"scroll":2.1,"flaskMark":0.0},"counts":{"hs":1},"parts":{"battle":15.8,"guard":15.8,"food":10.6,"weapon":10.6,"scroll":3.5,"active":0.0,"util":0.6,"drum":0.0,"engi":0.0,"goa":1.6,"pen":-0.0},"eng":0,"gold":87,"markFlasks":0,"demon":0,"chrom":2,"items":[["Drums of Battle",16,13.95],["Major Agility",14,54.82],["Flask of Chromatic Wonder",2,24.89],["Well Fed (food)",15,73.26],["Scroll of Protection",6,26.3],["Gift of Arthas",14,54.92]]},{"rank":23,"key":"Grazzyknoll","name":"Grazzyknoll","role":"Hunter","score":58.5,"tier":"D","tank":false,"flask":0,"battleE":88,"guardE":59,"battle":88,"guard":59,"food":100,"weapon":59,"scroll":41,"scrollTypes":"Agi,Spi","actRate":0.0,"utilRate":0.59,"drumScore":89,"drumWaste":4,"engiDmg":0,"flags":[],"verdict":"51 drums is real value, but everything personal is missing: zero potions and zero runes across the whole raid, 59% guardian elixir, 59% weapon enhancement, 41% scrolls, and no flask on any fight. Four drums were also wasted on Tinnitus.","engiDetail":"","cov":{"flask":0.0,"battle":5.28,"guard":3.54,"food":8.0,"weapon":3.54,"scroll":2.46,"flaskMark":0.0},"counts":{"hs":9,"band":1,"drum":51,"thorn":1},"parts":{"battle":15.8,"guard":10.6,"food":12.0,"weapon":7.1,"scroll":4.1,"active":0.0,"util":5.9,"drum":3.0,"engi":0.0,"goa":0.0,"pen":-0.0},"eng":1,"gold":79,"markFlasks":0,"demon":0,"chrom":0,"items":[["Drums of Battle",26,22.45],["Well Fed (food)",17,93.01],["Major Agility",10,51.25],["Scroll of Agility",5,32.2],["Elixir of the Mongoose",5,30.35],["Scroll of Spirit",2,16.13],["Greater Versatility",10,57.35]]},{"rank":25,"key":"Ohm","name":"Õhm","role":"Ele Shaman","score":45.8,"tier":"D","tank":false,"flask":0,"battleE":82,"guardE":0,"battle":82,"guard":0,"food":94,"weapon":100,"scroll":0,"scrollTypes":"-","actRate":0.41,"utilRate":0.47,"drumScore":0,"drumWaste":0,"engiDmg":0,"flags":["Superior Wizard Oil"],"verdict":"Last by a clear margin. Zero guardian elixir on every single fight, zero scrolls, zero potions apart from 7 lesser mana potions, and a battle elixir on only 82% of fights. Separately, the CLA flags an inactive Jeweler's neck equipped on 12 of 17 boss fights.","engiDetail":"","cov":{"flask":0.0,"battle":4.92,"guard":0.0,"food":7.52,"weapon":6.0,"scroll":0.0,"flaskMark":0.0},"counts":{"omana":7,"hs":8},"parts":{"battle":14.8,"guard":0.0,"food":11.3,"weapon":12.0,"scroll":0.0,"active":4.5,"util":4.7,"drum":0.0,"engi":0.0,"goa":0.0,"pen":-1.5},"eng":0,"gold":43,"markFlasks":0,"demon":0,"chrom":0,"items":[["Well Fed (food)",16,97.29],["Adept's Elixir",14,92.45]]}],"units":{"flask":2,"battle":6,"guard":6,"food":8,"weapon":6,"scroll":6,"flaskMark":2},"price":{"flask":78.43,"battle":3.35,"guard":4.05,"food":0.74,"weapon":2.89,"scroll":6.53,"haste":8.21,"destr":8.19,"iron":2.82,"smana":2.88,"omana":0.49,"felmana":28.03,"sheal":0.7,"rune":14.3,"emerald":0,"thistle":1.38,"hs":0,"seed":13.76,"flame":4.14,"felbl":0.18,"freeact":4.46,"band":0.32,"lei":18.33,"drum":0.21,"felbomb":2.42,"ssap":12.04,"gsap":10.04,"arcbomb":10.94,"adagren":5.17,"mine":4.43,"thorn":4.0,"holywater":3.0,"flaskMark":92.27},"clabels":[["haste","Haste"],["destr","Destr"],["iron","Iron"],["smana","S.Mana"],["omana","Mana−"],["felmana","FelMana"],["rune","Rune"],["emerald","Emerald"],["thistle","Thistle"],["sheal","S.Heal"],["hs","HStone"],["seed","Seed"],["flame","FlameCap"],["felbl","FelBloss"],["freeact","FAP"],["band","Bandg"],["lei","Lei"],["drum","Drums"]],"engk":["felbomb","ssap","gsap","arcbomb","adagren","mine","thorn","holywater"],"live":{"source":"BootyBayBroker — TBC Anniversary, US region, Horde market value, hourly from TSM","pulled":"2026-09-06","items":{"Flask of Blinding Light":92.27,"Flask of Relentless Assault":77.08,"Flask of Pure Death":78.1,"Flask of Chromatic Wonder":27.91,"Flask of Mighty Restoration":71.35,"Flask of Fortification":72.17,"Elixir of Draenic Wisdom":3.82,"Elixir of Major Agility":5.23,"Elixir of Major Mageblood":5.45,"Elixir of Demonslaying":3.07,"Elixir of the Mongoose":3.79,"Adept's Elixir":2.83,"Elixir of Healing Power":2.1,"Elixir of Major Fortitude":2.87,"Elixir of Major Strength":3.08,"Haste Potion":8.21,"Destruction Potion":8.19,"Free Action Potion":4.46,"Fel Mana Potion":28.03,"Ironshield Potion":2.82,"Insane Strength Potion":8.9,"Major Mana Potion":0.49,"Super Mana Potion":2.88,"Super Healing Potion":0.7,"Scroll of Agility V":13.19,"Scroll of Strength V":10.16,"Scroll of Protection V":1.43,"Scroll of Spirit V":1.34,"Scroll of Intellect V":0.05,"Brilliant Mana Oil":13.62,"Superior Wizard Oil":7.03,"Superior Mana Oil":11.45,"Adamantite Sharpening Stone":4.14,"Adamantite Weightstone":3.74,"Drums of Battle":10.5,"Dark Rune":14.3,"Thistle Tea":1.38,"Nightmare Seed":13.76,"Flame Cap":4.14,"Fel Blossom":0.18,"Lei of Lilies":18.33,"Heavy Netherweave Bandage":0.32,"Arcane Bomb":10.94,"Fel Iron Bomb":2.42,"Super Sapper Charge":12.04,"Goblin Sapper Charge":10.04,"Adamantite Grenade":5.17,"Goblin Land Mine":4.43,"Spicy Hot Talbuk":0.47,"Fisherman's Feast":0.31,"Ravager Dog":0.15,"Blackened Basilisk":0.9,"Golden Fish Sticks":1.96,"Roasted Clefthoof":0.98,"Grilled Mudfish":0.69,"Blackened Sporefish":0.04,"Spicy Crawdad":0.5}}};</script>
+<script>
+(function(){
+var DATA=window.__RANK__, P=DATA.players, PRICE0=DATA.price, UNITS=DATA.units;
+var CL=DATA.clabels, ENGK=DATA.engk;
+var PRICE=Object.assign({},PRICE0);
+var S={total:40,basis:'gold',skew:1,tank:1,floor:0,redeem:'best'};
+var PLABEL={flask:'Flask (bought)',flaskMark:'Shattrath flask (1 Mark)',battle:'Battle elixir',guard:'Guardian elixir',food:'Buff food',
+ weapon:'Weapon oil / stone',scroll:'Scroll (rank V)',haste:'Haste Potion',destr:'Destruction Potion',
+ iron:'Ironshield Potion',smana:'Super Mana Potion',omana:'Lesser mana potion',felmana:'Fel Mana Potion',
+ sheal:'Super Healing Potion',rune:'Dark / Demonic Rune',emerald:'Mana Emerald (conjured)',
+ thistle:'Thistle Tea',hs:'Healthstone (conjured)',seed:'Nightmare Seed',flame:'Flame Cap',
+ felbl:'Fel Blossom',freeact:'Free Action Potion',band:'Netherweave Bandage',lei:'Lei of Lilies',
+ drum:'Drums of Battle (per use)',felbomb:'Fel Iron Bomb',ssap:'Super Sapper Charge',
+ gsap:'Goblin Sapper Charge',arcbomb:'Arcane Bomb',adagren:'Adamantite Grenade',
+ mine:'Goblin Land Mine',thorn:'Thornling Seed',holywater:'Stratholme Holy Water'};
+var COVK=['flask','flaskMark','battle','guard','food','weapon','scroll'];
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function g(n){return Math.round(n).toLocaleString();}
+
+/* ---------- gold ---------- */
+function goldOf(p){
+  var s=0,k; PRICE.flaskMark=markValue();
+  for(k in p.cov) s+=p.cov[k]*(PRICE[k]||0);
+  for(k in p.counts) s+=p.counts[k]*(PRICE[k]||0);
+  return s;
+}
+function goldParts(p){
+  var cover=0,pot=0,util=0,drum=0,eng=0,mk=0,k;
+  for(k in p.cov){ if(k==='flaskMark') mk+=p.cov[k]*(PRICE[k]||0); else cover+=p.cov[k]*(PRICE[k]||0); }
+  ['haste','destr','iron','smana','omana','felmana','sheal','rune','emerald','thistle']
+    .forEach(function(x){pot+=(p.counts[x]||0)*(PRICE[x]||0);});
+  ['hs','seed','flame','felbl','freeact','band','lei']
+    .forEach(function(x){util+=(p.counts[x]||0)*(PRICE[x]||0);});
+  drum=(p.counts.drum||0)*(PRICE.drum||0);
+  ENGK.forEach(function(x){eng+=(p.counts[x]||0)*(PRICE[x]||0);});
+  return {cover:cover,pot:pot,util:util,drum:drum,eng:eng,mk:mk,total:cover+mk+pot+util+drum+eng};
+}
+function redemptions(){
+  var LV=(DATA.live&&DATA.live.items)||{};
+  var flasks=['Flask of Blinding Light','Flask of Pure Death','Flask of Relentless Assault',
+              'Flask of Fortification','Flask of Mighty Restoration'];
+  var bestFlask=0;
+  flasks.forEach(function(f){ if(LV[f]>bestFlask) bestFlask=LV[f]; });
+  if(!bestFlask) bestFlask=PRICE.flask||0;
+  return { flask:bestFlask, haste:10*(PRICE.haste||0), destr:10*(PRICE.destr||0) };
+}
+function markValue(){
+  var r=redemptions();
+  if(S.redeem==='flask') return r.flask;
+  if(S.redeem==='haste') return r.haste;
+  if(S.redeem==='destr') return r.destr;
+  return Math.max(r.flask, r.haste, r.destr);
+}
+
+/* ---------- allocation ---------- */
+function allocate(){
+  var n=P.length, fl={}, reserved=0;
+  P.forEach(function(p){var f=Math.max(S.floor, p.tank?S.tank:0); fl[p.key]=f; reserved+=f;});
+  var warn='';
+  if(reserved>S.total){
+    // scale floors down to fit, largest-remainder on the floor vector
+    var sc=S.total/reserved, base={}, used=0, fr=[];
+    P.forEach(function(p){var q=fl[p.key]*sc; base[p.key]=Math.floor(q); used+=base[p.key];
+      fr.push([q-Math.floor(q),p.key]);});
+    fr.sort(function(a,b){return b[0]-a[0];});
+    for(var i=0;i<S.total-used;i++) base[fr[i][1]]++;
+    warn='Guaranteed minimums need '+reserved+' marks but only '+S.total+
+         ' were earned, so the guarantees were scaled down to fit.';
+    return {alloc:base, share:base, warn:warn};
+  }
+  var rem=S.total-reserved;
+  var gmax=1,smax=1;
+  P.forEach(function(p){gmax=Math.max(gmax,goldOf(p)); smax=Math.max(smax,p.score);});
+  var w={}, tw=0;
+  P.forEach(function(p){
+    var v;
+    if(S.basis==='gold') v=goldOf(p)/gmax;
+    else if(S.basis==='score') v=p.score/smax;
+    else v=0.5*goldOf(p)/gmax + 0.5*p.score/smax;
+    v=Math.pow(Math.max(v,0), S.skew);
+    w[p.key]=v; tw+=v;
+  });
+  var share={}, base={}, used=0, frac=[];
+  P.forEach(function(p){
+    var q = tw>0 ? rem*w[p.key]/tw : rem/n;
+    share[p.key]=fl[p.key]+q;
+    base[p.key]=Math.floor(q); used+=base[p.key];
+    frac.push([q-Math.floor(q), p.key]);
+  });
+  frac.sort(function(a,b){return b[0]-a[0] || (a[1]<b[1]?-1:1);});
+  for(var i=0;i<rem-used;i++) base[frac[i][1]]++;
+  var out={}; P.forEach(function(p){out[p.key]=fl[p.key]+base[p.key];});
+  return {alloc:out, share:share, warn:''};
+}
+
+/* ---------- marks render ---------- */
+function renderMarks(){
+  var r=allocate(), mv=markValue();
+  var rows=P.slice().sort(function(a,b){
+    return (r.alloc[b.key]-r.alloc[a.key]) || (goldOf(b)-goldOf(a));});
+  var totalGold=0; P.forEach(function(p){totalGold+=goldOf(p);});
+  var covered=0; P.forEach(function(p){covered+=Math.min(r.alloc[p.key]*mv, goldOf(p));});
+  var rd=redemptions();
+  document.getElementById('mkSum').innerHTML=
+    tile('Marks distributed', Object.keys(r.alloc).reduce(function(a,k){return a+r.alloc[k];},0))+
+    tile('Value per mark', g(mv)+'g')+
+    tile('Or: flask / 10 haste / 10 destr', g(rd.flask)+' &middot; '+g(rd.haste)+' &middot; '+g(rd.destr))+
+    tile('Total marks value', g(S.total*mv)+'g')+
+    tile('Raid consumable spend', g(totalGold)+'g')+
+    tile('Share reimbursed', Math.round(covered/totalGold*100)+'%');
+  document.getElementById('mkWarn').innerHTML = r.warn?
+    '<p class="warnbar">'+esc(r.warn)+'</p>':'';
+  var h='';
+  rows.forEach(function(p,i){
+    var gv=goldOf(p), m=r.alloc[p.key], net=m*mv-gv, sh=r.share[p.key];
+    var pips=''; for(var k=0;k<Math.min(m,12);k++)
+      pips+='<i class="'+(p.tank&&k<S.tank?'tf':'')+'"></i>';
+    h+='<tr class="row" style="cursor:default">'+
+      '<td class="l rk">'+(i+1)+'</td>'+
+      '<td class="l"><div class="who"><span class="tier '+p.tier+'">'+p.tier+'</span>'+
+        '<span><span class="nm">'+esc(p.name)+'</span>'+(p.tank?'<span class="tankbadge">TANK</span>':'')+
+        '<br><span class="rl">'+esc(p.role)+'</span></span></div></td>'+
+      '<td class="gold">'+g(gv)+'g</td>'+
+      '<td class="numcol">'+p.score.toFixed(1)+'</td>'+
+      '<td class="numcol">'+sh.toFixed(2)+'</td>'+
+      '<td><div class="mkcell"><span class="pips">'+pips+'</span><span class="mk">'+m+'</span></div></td>'+
+      '<td class="numcol">'+g(m*mv)+'g</td>'+
+      '<td class="numcol net '+(net>=0?'pos':'neg')+'">'+(net>=0?'+':'&minus;')+g(Math.abs(net))+'g</td>'+
+    '</tr>';
+  });
+  document.getElementById('mkBody').innerHTML=h;
+  document.getElementById('pTotal').textContent=
+    'flask '+PRICE.flask+'g · haste/destruction '+PRICE.haste+'g · mark ≈ '+g(mv)+'g';
+}
+function tile(l,v){return '<div><dt>'+l+'</dt><dd>'+v+'</dd></div>';}
+
+/* ---------- ledger ---------- */
+function cls(v){return v>=90?'good':v>=70?'mid':'bad';}
+function covCell(v,neutral){return '<td class="cov '+(neutral?'flaskcol':cls(v))+'"><div class="covcell">'+
+  '<span class="covnum">'+v+'%</span><span class="covbar"><i style="width:'+v+'%"></i></span>'+
+  '</div></td>';}
+var view='score', sortK='rank', sortD=1;
+var VIEWS={
+ score:{cols:[['rank','#','l'],['name','Raider','l'],['score','Score',''],['flask','Flask',''],
+   ['battle','Battle',''],['guard','Guardian',''],['food','Food',''],['weapon','Weapon',''],
+   ['scroll','Scrolls',''],['actRate','Act/f',''],['utilRate','Util/f','']]},
+ cons:{cols:[['rank','#','l'],['name','Raider','l']].concat(
+   CL.map(function(c){return ['c_'+c[0],c[1],''];})).concat([['eng','Bombs','']])},
+ spend:{cols:[['rank','#','l'],['name','Raider','l'],['g_cover','Buffs',''],['g_pot','Potions',''],
+   ['g_util','Utility',''],['g_drum','Drums',''],['g_eng','Bombs',''],['markFlasks','Mark flasks',''],['gold','Total value','']]}
+};
+function val(p,k){
+  if(k.indexOf('c_')===0) return p.counts[k.slice(2)]||0;
+  if(k.indexOf('g_')===0) return goldParts(p)[k.slice(2)];
+  if(k==='gold') return goldOf(p);
+  return p[k];
+}
+function nameCell(p){
+  return '<td class="l"><div class="who"><span class="tier '+p.tier+'">'+p.tier+'</span>'+
+    '<span><span class="nm">'+esc(p.name)+'</span>'+(p.tank?'<span class="tankbadge">TANK</span>':'')+
+    '<br><span class="rl">'+esc(p.role)+'</span></span></div></td>';
+}
+var PARTLBL={battle:'Battle elixir',guard:'Guardian elixir',food:'Food',weapon:'Weapon',
+  scroll:'Scrolls',active:'Active potions',util:'Utility items',drum:'Drums bonus',
+  engi:'Engineering',goa:'Gift of Arthas',pen:'Flags'};
+var PARTMAX={battle:18,guard:18,food:12,weapon:12,scroll:10,active:22,util:8,drum:8,engi:3,goa:2,pen:3};
+function detailRow(p,span){
+  var chips=[];
+  if(p.counts.drum) chips.push('<span class="chip win">'+p.counts.drum+' drums &rarr; '+p.drumScore+' party buffs</span>');
+  if(p.drumWaste) chips.push('<span class="chip flag">'+p.drumWaste+' drums wasted on Tinnitus</span>');
+  if(p.engiDmg) chips.push('<span class="chip win">'+p.engiDmg.toLocaleString()+' engineering damage</span>');
+  if(p.scrollTypes && p.scrollTypes!=='-') chips.push('<span class="chip">scrolls: '+esc(p.scrollTypes)+'</span>');
+  p.flags.forEach(function(f){chips.push('<span class="chip flag">flagged: '+esc(f)+'</span>');});
+  if(p.engiDetail) chips.push('<span class="chip">'+esc(p.engiDetail)+'</span>');
+  var gp=goldParts(p);
+  chips.push('<span class="chip">est. spend '+g(gp.total)+'g</span>');
+  if(p.markFlasks) chips.push('<span class="chip win">'+p.markFlasks+' Shattrath flasks &mdash; '+p.markFlasks+' Marks already spent</span>');
+  if(p.demon) chips.push('<span class="chip win">'+p.demon+'&times; Elixir of Demonslaying</span>');
+  if(p.chrom) chips.push('<span class="chip">'+p.chrom+'&times; Flask of Chromatic Wonder (Shahraz)</span>');
+
+  var li=[];
+  COVK.forEach(function(k){ if(p.cov[k]>0)
+    li.push('<li><span>'+PLABEL[k]+' &middot; '+Math.round(p.cov[k]/UNITS[k]*100)+'% covered</span><span>'+
+      p.cov[k].toFixed(1)+' &times; '+PRICE[k]+'g</span></li>');});
+  Object.keys(p.counts).forEach(function(k){
+    li.push('<li><span>'+(PLABEL[k]||k)+'</span><span>'+p.counts[k]+
+      (PRICE[k]?' &times; '+PRICE[k]+'g':' &middot; free')+'</span></li>');});
+  if(!li.length) li.push('<li><span>Nothing logged</span><span>0</span></li>');
+
+  var pts='';
+  Object.keys(PARTLBL).forEach(function(k){
+    var v=p.parts[k]; if(!v) return;
+    var w=Math.min(Math.abs(v)/PARTMAX[k]*100,100);
+    pts+='<div class="ptrow"><span class="lb">'+PARTLBL[k]+'</span>'+
+         '<span class="ptbar'+(v<0?' neg':'')+'"><i style="width:'+w.toFixed(0)+'%"></i></span>'+
+         '<span class="vl">'+(v>0?'+':'')+v.toFixed(1)+'</span></div>';
+  });
+  var items=(p.items||[]).map(function(x){
+    var hl=/Shattrath|Demonslaying/.test(x[0])?' class="hl"':'';
+    return '<li'+hl+'><span>'+esc(x[0])+'</span><span>'+x[1]+' &middot; '+x[2].toFixed(1)+'%</span></li>';}).join('');
+  return '<tr class="det" data-for="'+p.key+'" hidden><td colspan="'+span+'"><div class="detin">'+
+    '<div><p class="verdict">'+p.verdict+'</p><div class="chips">'+chips.join('')+'</div>'+
+    '<div class="pts">'+pts+'</div>'+
+    (items?'<div class="itemlist"><p class="hd">Named buffs from the log &middot; applications &amp; uptime</p><ul>'+items+'</ul></div>':'')+
+    '</div>'+
+    '<div class="dlist"><p class="hd">Consumables logged &amp; costed &middot; 17 boss fights</p><ul>'+
+    li.join('')+'</ul></div></div></td></tr>';
+}
+function renderLedger(){
+  var cols=VIEWS[view].cols;
+  document.getElementById('th').innerHTML='<tr>'+cols.map(function(c){
+    return '<th class="'+c[2]+'"'+(sortK===c[0]?' aria-sort="'+(sortD>0?'ascending':'descending')+'"':'')+
+      '><button type="button" data-k="'+c[0]+'">'+c[1]+
+      '<span class="caret">'+(sortK===c[0]?(sortD>0?'▲':'▼'):'')+'</span></button></th>';
+  }).join('')+'</tr>';
+  var list=P.slice().sort(function(a,b){
+    var x=val(a,sortK),y=val(b,sortK);
+    if(typeof x==='string') return sortD*x.localeCompare(y);
+    return sortD*(x-y);
+  });
+  var h='';
+  list.forEach(function(p){
+    h+='<tr class="row" data-key="'+p.key+'" tabindex="0" role="button" aria-expanded="false">';
+    cols.forEach(function(c){
+      var k=c[0];
+      if(k==='rank') h+='<td class="l rk'+(p.rank<=3?' top':'')+'">'+p.rank+'</td>';
+      else if(k==='name') h+=nameCell(p);
+      else if(k==='score') h+='<td class="scorecell"><div class="scoreline"><span class="sbar">'+
+        '<i style="width:'+Math.max(2,Math.min(100,(p.score-40)/62*100)).toFixed(0)+'%"></i></span>'+
+        '<span class="sval">'+p.score.toFixed(1)+'</span></div></td>';
+      else if(['flask','battle','guard','food','weapon','scroll'].indexOf(k)>=0) h+=covCell(p[k],k==='flask');
+      else if(k==='actRate'||k==='utilRate') h+='<td class="rate'+(p[k]===0?' zero':'')+'">'+p[k].toFixed(2)+'</td>';
+      else if(k==='gold') h+='<td class="gold">'+g(goldOf(p))+'g</td>';
+      else if(k.indexOf('g_')===0){var v=val(p,k); h+='<td class="numcol'+(v?'':' z')+'">'+(v?g(v):'–')+'</td>';}
+      else {var n=val(p,k); h+='<td class="numcol'+(n?'':' z')+'">'+(n||'–')+'</td>';}
+    });
+    h+='</tr>'+detailRow(p,cols.length);
+  });
+  document.getElementById('tb').innerHTML=h;
+}
+document.getElementById('tbl').addEventListener('click',function(e){
+  var b=e.target.closest('thead button');
+  if(b){var k=b.dataset.k; sortD=(sortK===k)?-sortD:(k==='rank'||k==='name'?1:-1); sortK=k; renderLedger(); return;}
+  var tr=e.target.closest('tr.row'); if(tr) toggle(tr);
+});
+document.getElementById('tbl').addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  var tr=e.target.closest('tr.row'); if(tr){e.preventDefault(); toggle(tr);}
+});
+function toggle(tr){
+  var d=document.querySelector('tr.det[data-for="'+tr.dataset.key+'"]');
+  if(!d) return; var open=!d.hidden; d.hidden=open;
+  tr.classList.toggle('open',!open); tr.setAttribute('aria-expanded',String(!open));
+}
+document.querySelectorAll('.tabs button').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-selected','false');});
+    b.setAttribute('aria-selected','true'); view=b.dataset.view;
+    sortK = view==='spend' ? 'gold' : 'rank'; sortD = view==='spend' ? -1 : 1;
+    renderLedger();
+  });
+});
+
+/* ---------- price editor ---------- */
+function renderPrices(){
+  document.getElementById('pGrid').innerHTML=Object.keys(PLABEL).map(function(k){
+    return '<div class="pitem"><span>'+PLABEL[k]+'</span>'+
+      '<input type="number" min="0" step="1" data-p="'+k+'" value="'+(PRICE[k]||0)+'"></div>';
+  }).join('');
+}
+document.getElementById('pGrid').addEventListener('input',function(e){
+  var i=e.target.closest('input[data-p]'); if(!i) return;
+  PRICE[i.dataset.p]=Math.max(0,Number(i.value)||0);
+  renderMarks(); renderLedger(); writeHash();
+});
+
+/* ---------- live price provenance ---------- */
+function renderLive(){
+  var L=DATA.live; if(!L) return;
+  document.getElementById('liveBar').innerHTML =
+    'Prices pulled ' + esc(L.pulled) + ' — ' + esc(L.source);
+  var keys=Object.keys(L.items).sort();
+  document.getElementById('liveTbl').innerHTML =
+    '<h4>Live auction prices behind these defaults &middot; ' + keys.length + ' items</h4><div class="livegrid">' +
+    keys.map(function(k){ return '<div><span>'+esc(k)+'</span><span>'+L.items[k].toFixed(2)+'g</span></div>'; }).join('') +
+    '</div>';
+}
+document.getElementById('btnLive').addEventListener('click',function(){
+  PRICE=Object.assign({},PRICE0);
+  renderPrices(); renderMarks(); renderLedger(); writeHash();
+  document.getElementById('pasteMsg').textContent='Restored to the live prices pulled '+DATA.live.pulled+'.';
+});
+
+/* ---------- paste prices ---------- */
+function norm(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,''); }
+function parsePriceLine(line){
+  // gold/silver form: "132g", "15g 50s", "1,200 gold"
+  var mg = line.match(/(\d[\d,]*(?:\.\d+)?)\s*g(?:old)?\b/i);
+  var ms = line.match(/(\d+)\s*s(?:ilver)?\b/i);
+  if(mg) return parseFloat(mg[1].replace(/,/g,'')) + (ms ? parseInt(ms[1],10)/100 : 0);
+  // bare trailing number after a separator or space: "Haste Potion, 16" / "Haste Potion 16"
+  var mn = line.match(/(?:[,:=\t]|\s)\s*(\d[\d,]*(?:\.\d+)?)\s*$/);
+  return mn ? parseFloat(mn[1].replace(/,/g,'')) : null;
+}
+document.getElementById('btnPaste').addEventListener('click',function(){
+  var txt = document.getElementById('pPaste').value || '';
+  var idx = Object.keys(PLABEL).map(function(k){
+    return { k:k, n:norm(PLABEL[k].replace(/\(.*?\)/g,'')) };
+  }).filter(function(e){ return e.n; });
+  var hit=0, miss=[];
+  txt.split(/\r?\n/).forEach(function(line){
+    if(!line.trim()) return;
+    var val = parsePriceLine(line);
+    if(val===null || !isFinite(val)){ miss.push(line.trim().slice(0,28)); return; }
+    var name = norm(line.replace(/[\d,.]+\s*(?:g(?:old)?|s(?:ilver)?|c(?:opper)?)?/gi,''));
+    var best=null, bestLen=0;
+    idx.forEach(function(e){
+      if(name.indexOf(e.n)>=0 || e.n.indexOf(name)>=0){
+        if(e.n.length>bestLen){ bestLen=e.n.length; best=e.k; }
+      }
+    });
+    if(best){ PRICE[best]=Math.max(0,val); hit++; } else miss.push(line.trim().slice(0,28));
+  });
+  renderPrices(); renderMarks(); renderLedger(); writeHash();
+  document.getElementById('pasteMsg').textContent =
+    hit + ' price' + (hit===1?'':'s') + ' updated' +
+    (miss.length ? ' — no match for: ' + miss.slice(0,3).join(', ') +
+      (miss.length>3 ? ' +'+(miss.length-3)+' more' : '') : '');
+});
+
+/* ---------- controls ---------- */
+function bind(id,key,fn){
+  var el=document.getElementById(id);
+  el.addEventListener('input',function(){S[key]=Number(el.value)||0; if(fn)fn(); renderMarks(); writeHash();});
+  return el;
+}
+bind('mkTotal','total');
+bind('mkTank','tank');
+bind('mkFloor','floor');
+bind('mkSkew','skew',function(){document.getElementById('mkSkewV').textContent=S.skew.toFixed(1);});
+document.getElementById('mkRedeem').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-v]'); if(!b) return;
+  S.redeem=b.dataset.v;
+  this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
+  renderPrices(); renderMarks(); renderLedger(); writeHash();
+});
+document.getElementById('mkBasis').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-v]'); if(!b) return;
+  S.basis=b.dataset.v;
+  this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
+  renderMarks(); writeHash();
+});
+
+/* ---------- share link / restore ---------- */
+function writeHash(){
+  var pd={}; Object.keys(PRICE).forEach(function(k){if(PRICE[k]!==PRICE0[k]) pd[k]=PRICE[k];});
+  var o={t:S.total,b:S.basis,k:S.skew,tk:S.tank,f:S.floor,rd:S.redeem};
+  if(Object.keys(pd).length) o.p=pd;
+  var s=JSON.stringify(o);
+  try{history.replaceState(null,'','#'+encodeURIComponent(s));}catch(e){}
+  try{localStorage.setItem('rr_marks',s);}catch(e){}
+}
+function readState(){
+  var s=null;
+  if(location.hash.length>1){try{s=JSON.parse(decodeURIComponent(location.hash.slice(1)));}catch(e){s=null;}}
+  if(!s){try{s=JSON.parse(localStorage.getItem('rr_marks')||'null');}catch(e){s=null;}}
+  if(!s||typeof s!=='object') return;
+  if(typeof s.t==='number') S.total=s.t;
+  if(s.b==='gold'||s.b==='score'||s.b==='blend') S.basis=s.b;
+  if(typeof s.k==='number') S.skew=s.k;
+  if(typeof s.tk==='number') S.tank=s.tk;
+  if(typeof s.f==='number') S.floor=s.f;
+  if(['best','flask','haste','destr'].indexOf(s.rd)>=0) S.redeem=s.rd;
+  if(s.p&&typeof s.p==='object') Object.keys(s.p).forEach(function(k){
+    if(k in PRICE && typeof s.p[k]==='number') PRICE[k]=s.p[k];});
+  document.getElementById('mkTotal').value=S.total;
+  document.getElementById('mkTank').value=S.tank;
+  document.getElementById('mkFloor').value=S.floor;
+  document.getElementById('mkSkew').value=S.skew;
+  document.getElementById('mkSkewV').textContent=S.skew.toFixed(1);
+  document.querySelectorAll('#mkBasis button').forEach(function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.v===S.basis));});
+  document.querySelectorAll('#mkRedeem button').forEach(function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.v===S.redeem));});
+}
+document.getElementById('btnShare').addEventListener('click',function(){
+  writeHash();
+  var msg=document.getElementById('shareMsg');
+  var url=location.href;
+  function done(ok){msg.textContent= ok?'Link copied — it carries these settings.':
+    'Copy the address bar URL — it carries these settings.';}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){done(true);},function(){done(false);});
+  } else done(false);
+});
+document.getElementById('btnReset').addEventListener('click',function(){
+  S={total:40,basis:'gold',skew:1,tank:1,floor:0};
+  PRICE=Object.assign({},PRICE0);
+  try{localStorage.removeItem('rr_marks');}catch(e){}
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  document.getElementById('mkTotal').value=40;
+  document.getElementById('mkTank').value=1;
+  document.getElementById('mkFloor').value=0;
+  document.getElementById('mkSkew').value=1;
+  document.getElementById('mkSkewV').textContent='1.0';
+  document.querySelectorAll('#mkBasis button').forEach(function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.v==='gold'));});
+  document.getElementById('shareMsg').textContent='Back to defaults.';
+  renderPrices(); renderMarks(); renderLedger();
+});
+
+/* ---------- raid bars ---------- */
+var RAID=[['Food buff',98.1],['Battle elixir slot',96.6],['Weapon enhancement',91.5],
+          ['Guardian elixir slot',85.4],['Scrolls',52.7]];
+document.getElementById('raidbars').innerHTML=RAID.map(function(r){
+  return '<div class="hbrow"><span class="lb">'+r[0]+'</span>'+
+    '<span class="hbtrack"><i style="width:'+r[1].toFixed(1)+'%"></i></span>'+
+    '<span class="vl">'+r[1].toFixed(1)+'%</span></div>';
+}).join('')+
+ '<div class="hbrow" style="margin-top:6px;padding-top:11px;border-top:1px solid var(--line-soft)">'+
+ '<span class="lb">Potions / fight</span><span class="hbtrack"><i style="width:67%"></i></span>'+
+ '<span class="vl">1.34</span></div>'+
+ '<div class="hbrow"><span class="lb">Utility / fight</span>'+
+ '<span class="hbtrack"><i style="width:54%"></i></span><span class="vl">0.43</span></div>';
+
+readState(); renderLive(); renderPrices(); renderMarks(); renderLedger();
+})();
+</script>
+
+</body>
+</html>

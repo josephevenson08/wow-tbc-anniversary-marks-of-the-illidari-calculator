@@ -455,6 +455,7 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
 
     <div class="sharebar">
       <button type="button" id="btnShare">Copy share link</button>
+      <button type="button" id="btnExport">Export marks</button>
       <button type="button" id="btnReset">Reset to defaults</button>
       <span class="msg" id="shareMsg">Settings ride in the link &mdash; paste it in guild chat and everyone sees the same split.</span>
     </div>
@@ -1099,6 +1100,24 @@ document.getElementById('btnShare').addEventListener('click',function(){
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(url).then(function(){done(true);},function(){done(false);});
   } else done(false);
+});
+function marksText(){
+  var out=[];
+  document.querySelectorAll('#mkBody tr').forEach(function(tr){
+    var nm=tr.querySelector('.nm'), mk=tr.querySelector('.mk');
+    if(nm&&mk) out.push(nm.textContent.trim()+': '+mk.textContent.trim());
+  });
+  return out.join('\n')+'\n';
+}
+document.getElementById('btnExport').addEventListener('click',function(){
+  var rows=document.querySelectorAll('#mkBody tr').length;
+  var blob=new Blob([marksText()],{type:'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='marks-of-the-illidari.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},0);
+  document.getElementById('shareMsg').textContent=
+    'Exported '+rows+' raiders to marks-of-the-illidari.txt.';
 });
 document.getElementById('btnReset').addEventListener('click',function(){
   S={total:40,basis:'gold',skew:1,tank:1,floor:0};

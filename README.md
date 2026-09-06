@@ -74,20 +74,34 @@ re-sorts. 23 of 25 raiders land within two places of their listed rank in at lea
 Marks are distributed on estimated gold spent — no score, no parse, no role. Every raider in the
 pool lands in one of three bands by what they spent:
 
-| Band | Default cut | Shares |
-|---|---|---:|
-| Top | 500g and up | 3 |
-| Middle | 250–499g | 2 |
-| Bottom | under 250g | 1 |
+| Band | Default cut | Raiders | Spend | Share of raid | Derived share |
+|---|---|---:|---:|---:|---:|
+| Top | 500g and up | 7 | 4,729g | 49.6% | 4.9× |
+| Middle | 250–499g | 10 | 3,707g | 38.9% | 2.7× |
+| Bottom | under 250g | 8 | 1,095g | 11.5% | 1.0× |
 
-Each band's share count is its weight in the split, so a top-band raider draws three marks for
-every one a bottom-band raider draws. Marks that don't divide evenly go to the top band first and
-to the biggest spender first within a band, which keeps the bands strictly ordered: nobody in a
-lower band can out-earn someone in a higher one.
+**Share counts are derived, not typed in.** Each raider carries their band's mean spend as their
+weight, so every band is reimbursed at the same rate as every other and everyone inside a band is
+paid alike. Change the mark total, the prices, or who is in the pool and the shares recompute.
+Marks that don't divide evenly go to the biggest spender first, which — because gold order is band
+order — hands them to the top band first and keeps the bands ordered.
 
-Both cut points and all three share counts are editable. On the bundled roster the defaults split
-the raid **7 / 10 / 8**, and both cut points fall in natural gaps in the spend (543g → 498g at the
-500 line, 268g → 247g at the 250 line).
+Both cut points are editable. On the bundled roster the defaults split the raid **7 / 10 / 8**, and
+both fall in natural gaps in the spend (543g → 498g at the 500 line, 268g → 247g at the 250 line).
+
+### Bands or per gold
+
+The **Split shape** toggle picks between two ways of spending the same weights:
+
+- **Bands** — everyone in a band gets the same number of marks. Easy to announce ("you spent 500+,
+  you get 3"), but it puts a cliff at each cut point: at 40 marks Junnox on 498g gets 2 while
+  Donkin on 543g gets 3, so 45g of spend costs a whole mark.
+- **Per gold** — each raider is reimbursed on their own spend, bands collapsed away. No cliffs, and
+  the ordering can never invert: more gold never means fewer marks. Junnox gets 3 and Novick on
+  247g gets 1. Harder to summarise in one sentence to the raid.
+
+Per gold is the strictly fairer of the two per gold spent. Bands are the more explainable. Both
+run off the same gold figures and neither touches the score.
 
 ### Floors
 
@@ -108,11 +122,23 @@ middle band, while the top-band tank keeps the three her spend earns.
 
 ### Picking a total
 
-The mark total is yours to set, and a total that is too small cannot keep the bands apart — with
-3/2/1 shares over 7/10/8 raiders you need **49 marks** for a clean 3/2/1, and at 40 the bottom
-band rounds to zero apart from the floored tanks. The page says so in a banner rather than quietly
-flattening the bands. If the floors themselves overrun the total, it falls back to an even split
-and says so.
+The mark total is the constraint that actually decides how this feels, and it is worth being blunt
+about the arithmetic. At 92g a Mark, **40 marks is 3,690g of value against 9,531g of spend — the
+raid can only give back 39% of what it cost.** Spread over 25 raiders that is 1.6 marks each, so
+any scheme is going to leave the bottom of the roster on nought or one.
+
+That is why the bottom band rounds to zero on the defaults: it is not the share figures being
+harsh, it is that those eight raiders put in 11.5% of the gold, and 11.5% of 40 marks is 4.6 marks
+between them. The levers that change it are the mark total and the floors, not the shares:
+
+- **Raise the total.** More marks, less rounding, everyone moves up.
+- **Floor for everyone = 1.** Nobody leaves with nothing. The re-splitting floor keeps the bands
+  ordered while it does this — the split still comes out 3 / 1–2 / 1.
+- **Leave it.** Faithful reimbursement: you get back a share of what you put in, and if you put in
+  little you get little.
+
+If the floors themselves overrun the total, the split falls back to an even one and says so in a
+banner.
 
 Raiders can be checked out of the pool entirely with the **In** column; their shares are
 redistributed among everyone left, and they are dropped from both PNG exports.

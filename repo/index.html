@@ -270,6 +270,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .bands .bv{font-family:var(--display);font-weight:800;font-size:20px;margin-top:3px}
 .bands .bs{font-family:var(--mono);font-size:11.5px;color:var(--accent);margin-top:2px}
 .bands>div.empty .bv,.bands>div.empty .bs{color:var(--muted)}
+.pinflag{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--warn);
+  border:1px solid var(--warn);border-radius:2px;padding:0 3px;margin-left:6px}
 .bandtag{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;border-radius:2px;
   padding:1px 5px;border:1px solid}
 .bandtag.b0{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
@@ -388,7 +390,9 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
     Mark is consumable currency and handing it to the people who bought the consumables is a straight
     reimbursement. The split is driven entirely by gold spent &mdash; every raider falls into one of
     three spend bands, each band draws a fixed number of shares, and the biggest spenders always
-    come out ahead. No scoring enters the distribution.</p>
+    come out ahead. No scoring enters the distribution. The one exception is a guaranteed minimum:
+    tanks are never left with less than one Mark, because tanking costs money the log does not
+    always show.</p>
 
   <div class="marks">
     <div class="marks-ctl">
@@ -430,10 +434,16 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
           that don't divide evenly go to the top band first, biggest spender first.</span>
       </div>
       <div class="fld">
+        <label for="mkTank">Tank floor</label>
+        <input type="number" id="mkTank" min="0" max="20" step="1" value="1">
+        <span class="help">A guaranteed minimum for Captrawr, Oddbird and Thotiana. It lifts a tank who
+          would otherwise fall short; a tank whose own spend already earns more keeps the larger
+          figure, so it is a floor and not a bonus.</span>
+      </div>
+      <div class="fld">
         <label for="mkFloor">Floor for everyone</label>
         <input type="number" id="mkFloor" min="0" max="20" step="1" value="0">
-        <span class="help">A guaranteed minimum for every raider in the pool, taken off the top before
-          the bands are weighted.</span>
+        <span class="help">The same guarantee, applied to every raider in the pool.</span>
       </div>
     </div>
 
@@ -604,8 +614,9 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
       back the people who funded the raid. Splitting them evenly means a raider who brought nothing
       gets the same rebate as one who spent 1,200g, which is the opposite of fair. The three spend
       bands are how hard you lean into that: a top-band raider draws three shares to a bottom-band
-      raider's one, and both cut points are yours to move. Nothing else feeds the split &mdash; not
-      score, not role, not tanking.</p>
+      raider's one, and both cut points are yours to move. Score never enters it. The only
+      override is the tank floor: it lifts a tank who would otherwise fall short up to the minimum,
+      and leaves alone any tank whose own spend already earns more.</p>
     <h3>Is the order robust?</h3>
     <p>Every weight, cap and bonus ceiling was re-rolled 4,000 times at &plusmn;40% and the table
       re-sorted each time. 23 of 25 raiders land within two places of their listed rank in at least
@@ -729,7 +740,7 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
 var DATA=window.__RANK__, P=DATA.players, PRICE0=DATA.prices;
 var CL=DATA.clabels, ENGK=DATA.engk;
 var PRICE=Object.assign({},PRICE0);
-var S={total:40,cut1:500,cut2:250,w1:3,w2:2,w3:1,floor:0,redeem:'best',excl:{}};
+var S={total:40,cut1:500,cut2:250,w1:3,w2:2,w3:1,tank:1,floor:0,redeem:'best',excl:{}};
 var PLABEL={flask:'Flask (bought)',flaskMark:'Shattrath flask (1 Mark)',battle:'Battle elixir',guard:'Guardian elixir',food:'Buff food',
  weapon:'Weapon oil / stone',scroll:'Scroll (rank V)',haste:'Haste Potion',destr:'Destruction Potion',
  iron:'Ironshield Potion',smana:'Super Mana Potion',omana:'Lesser mana potion',felmana:'Fel Mana Potion',
@@ -792,9 +803,15 @@ function bandLbl(i){
   if(i===1) return g(c[1])+'\u2013'+g(Math.max(c[1],c[0]-1))+'g';
   return 'under '+g(c[1])+'g';
 }
-function bandWarn(A,out,bnd){
+function floorOf(p){ return Math.max(0, Math.max(S.floor, p.tank?S.tank:0)); }
+
+/* The warning is about whether the share split separates the bands, so raiders
+   lifted to a floor sit outside it and are skipped. */
+function bandWarn(A,out,bnd,pinned){
   var lo=[1/0,1/0,1/0], hi=[-1,-1,-1], cnt=[0,0,0];
-  A.forEach(function(p){ var b=bnd[p.key], m=out[p.key];
+  A.forEach(function(p){
+    if(pinned[p.key]!==undefined) return;
+    var b=bnd[p.key], m=out[p.key];
     cnt[b]++; if(m<lo[b])lo[b]=m; if(m>hi[b])hi[b]=m; });
   for(var b=0;b<3;b++) for(var c=b+1;c<3;c++)
     if(cnt[b]&&cnt[c]&&bandW(b)>bandW(c)&&hi[c]>=lo[b])
@@ -803,41 +820,68 @@ function bandWarn(A,out,bnd){
         '. Raise the mark total or widen the shares.';
   return '';
 }
+
+/* One weighted pass over the pool, then anyone the split leaves under their floor
+   is pinned at that floor, dropped out of the weighted pool, and the rest is
+   re-split over what is left. Repeats until nobody is short, so a floor is a true
+   minimum rather than a bonus stacked on top of a band share. */
 function allocate(){
-  var A=pool(), out={}, share={}, bnd={};
+  var A=pool(), out={}, share={}, bnd={}, pinned={};
   P.forEach(function(p){ out[p.key]=0; share[p.key]=0; bnd[p.key]=bandOf(goldOf(p)); });
-  if(!A.length) return {alloc:out, share:share, band:bnd,
+  if(!A.length) return {alloc:out, share:share, band:bnd, pinned:pinned,
     warn:'Every raider is excluded, so there is nobody to split the marks between.'};
 
-  var fl=Math.max(0,S.floor), reserved=fl*A.length;
-  if(reserved>S.total){
-    // the floor alone overruns the total, so fall back to an even split
+  var need=0; A.forEach(function(p){ need+=floorOf(p); });
+  if(need>S.total){
+    // the floors alone overrun the total, so fall back to an even split
     var per=Math.floor(S.total/A.length), extra=S.total-per*A.length;
     var byGold=A.slice().sort(function(a,b){
       return goldOf(b)-goldOf(a) || (a.key<b.key?-1:1);});
     A.forEach(function(q){ out[q.key]=per; share[q.key]=S.total/A.length; });
     for(var j=0;j<extra;j++) out[byGold[j].key]++;
-    return {alloc:out, share:share, band:bnd,
-      warn:'A floor of '+fl+' each for '+A.length+' raiders needs '+reserved+' marks but only '+
-        S.total+' were earned, so the floor gave way to an even split.'};
+    return {alloc:out, share:share, band:bnd, pinned:pinned,
+      warn:'The guaranteed minimums need '+need+' marks but only '+S.total+
+        ' were earned, so they gave way to an even split.'};
   }
 
-  var rem=S.total-reserved, tw=0;
-  A.forEach(function(p){ tw+=bandW(bnd[p.key]); });
-  var base={}, used=0;
+  var base={}, quota={}, guard=0;
+  while(guard++ <= A.length+1){
+    var free=A.filter(function(p){ return pinned[p.key]===undefined; });
+    if(!free.length) break;
+    var budget=S.total;
+    A.forEach(function(p){ if(pinned[p.key]!==undefined) budget-=pinned[p.key]; });
+    var tw=0; free.forEach(function(p){ tw+=bandW(bnd[p.key]); });
+    var used=0;
+    base={}; quota={};
+    free.forEach(function(p){
+      quota[p.key]= tw>0 ? budget*bandW(bnd[p.key])/tw : budget/free.length;
+      base[p.key]=Math.floor(quota[p.key]); used+=base[p.key];
+    });
+    // rounding leftovers go to the top band first, biggest spender first
+    var ord=free.filter(function(p){ return tw<=0 || bandW(bnd[p.key])>0; })
+      .sort(function(a,b){ return (bnd[a.key]-bnd[b.key]) ||
+        (goldOf(b)-goldOf(a)) || (a.key<b.key?-1:1); });
+    var left=budget-used;
+    for(var i=0;i<left && i<ord.length;i++) base[ord[i].key]++;
+    var under=free.filter(function(p){ return base[p.key]<floorOf(p); });
+    if(!under.length) break;
+    under.forEach(function(p){ pinned[p.key]=floorOf(p); });
+  }
+
   A.forEach(function(p){
-    var q = tw>0 ? rem*bandW(bnd[p.key])/tw : rem/A.length;
-    share[p.key]=fl+q;
-    base[p.key]=Math.floor(q); used+=base[p.key];
+    if(pinned[p.key]!==undefined){ out[p.key]=pinned[p.key]; share[p.key]=pinned[p.key]; }
+    else { out[p.key]=base[p.key]||0; share[p.key]=quota[p.key]||0; }
   });
-  // whatever rounding leaves over goes to the top band first, biggest spender first
-  var ord=A.filter(function(p){ return tw<=0 || bandW(bnd[p.key])>0; })
-    .sort(function(a,b){ return (bnd[a.key]-bnd[b.key]) ||
+
+  // the total is a promise: hand out anything rounding left behind, top band first
+  var got=0; A.forEach(function(p){ got+=out[p.key]; });
+  if(got<S.total){
+    var ord2=A.slice().sort(function(a,b){ return (bnd[a.key]-bnd[b.key]) ||
       (goldOf(b)-goldOf(a)) || (a.key<b.key?-1:1); });
-  var left=rem-used;
-  for(var i=0;i<left && i<ord.length;i++) base[ord[i].key]++;
-  A.forEach(function(p){ out[p.key]=fl+base[p.key]; });
-  return {alloc:out, share:share, band:bnd, warn:bandWarn(A,out,bnd)};
+    for(var n=0; got<S.total; n++, got++) out[ord2[n%ord2.length].key]++;
+  }
+  return {alloc:out, share:share, band:bnd, pinned:pinned,
+    warn:bandWarn(A,out,bnd,pinned)};
 }
 
 /* ---------- marks render ---------- */
@@ -898,7 +942,10 @@ function renderMarks(){
         '<span class="rkgap">#'+p.rank+'</span></td>'+
       '<td class="numcol">'+(out?'&mdash;':sh.toFixed(2))+'</td>'+
       '<td>'+(out?'<div class="mkcell"><span class="exdash">excluded</span></div>'
-        :'<div class="mkcell"><span class="pips">'+pips+'</span><span class="mk">'+m+'</span></div>')+'</td>'+
+        :'<div class="mkcell"><span class="pips">'+pips+'</span><span class="mk">'+m+'</span>'+
+          (r.pinned[p.key]!==undefined
+            ?'<span class="pinflag" title="lifted to the guaranteed minimum">min</span>':'')+
+          '</div>')+'</td>'+
       '<td class="numcol">'+(out?'&mdash;':g(m*mv)+'g')+'</td>'+
       '<td class="numcol'+(out?'':' net '+(net>=0?'pos':'neg'))+'">'+
         (out?'&mdash;':(net>=0?'+':'&minus;')+g(Math.abs(net))+'g')+'</td>'+
@@ -1137,6 +1184,7 @@ function bind(id,key,fn){
   return el;
 }
 bind('mkTotal','total');
+bind('mkTank','tank');
 bind('mkFloor','floor');
 bind('mkCut1','cut1');
 bind('mkCut2','cut2');
@@ -1152,6 +1200,7 @@ document.getElementById('mkRedeem').addEventListener('click',function(e){
 /* ---------- share link / restore ---------- */
 function syncCtl(){
   document.getElementById('mkTotal').value=S.total;
+  document.getElementById('mkTank').value=S.tank;
   document.getElementById('mkFloor').value=S.floor;
   document.getElementById('mkCut1').value=S.cut1;
   document.getElementById('mkCut2').value=S.cut2;
@@ -1161,7 +1210,7 @@ function syncCtl(){
 }
 function writeHash(){
   var pd={}; Object.keys(PRICE).forEach(function(k){if(PRICE[k]!==PRICE0[k]) pd[k]=PRICE[k];});
-  var o={t:S.total,c1:S.cut1,c2:S.cut2,w1:S.w1,w2:S.w2,w3:S.w3,f:S.floor,rd:S.redeem};
+  var o={t:S.total,c1:S.cut1,c2:S.cut2,w1:S.w1,w2:S.w2,w3:S.w3,tk:S.tank,f:S.floor,rd:S.redeem};
   var ex=Object.keys(S.excl); if(ex.length) o.x=ex;
   if(Object.keys(pd).length) o.p=pd;
   var s=JSON.stringify(o);
@@ -1177,6 +1226,7 @@ function readState(){
   ['c1','c2','w1','w2','w3'].forEach(function(k){
     var t={c1:'cut1',c2:'cut2',w1:'w1',w2:'w2',w3:'w3'}[k];
     if(typeof s[k]==='number') S[t]=s[k];});
+  if(typeof s.tk==='number') S.tank=s.tk;
   if(typeof s.f==='number') S.floor=s.f;
   if(['best','flask','haste','destr'].indexOf(s.rd)>=0) S.redeem=s.rd;
   if(Array.isArray(s.x)){ var valid={}; P.forEach(function(pl){valid[pl.key]=1;});
@@ -1288,7 +1338,7 @@ document.getElementById('btnPngScore').addEventListener('click',function(){
     'Exported '+R.length+' raiders to consumable-scores.png.');
 });
 document.getElementById('btnReset').addEventListener('click',function(){
-  S={total:40,cut1:500,cut2:250,w1:3,w2:2,w3:1,floor:0,redeem:'best',excl:{}};
+  S={total:40,cut1:500,cut2:250,w1:3,w2:2,w3:1,tank:1,floor:0,redeem:'best',excl:{}};
   PRICE=Object.assign({},PRICE0);
   try{localStorage.removeItem('rr_marks');}catch(e){}
   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}

@@ -71,8 +71,8 @@ re-sorts. 23 of 25 raiders land within two places of their listed rank in at lea
 
 ## The Mark split
 
-Marks are distributed on estimated gold spent and nothing else — no score, no role, no tank
-handling. Every raider in the pool lands in one of three bands by what they spent:
+Marks are distributed on estimated gold spent — no score, no parse, no role. Every raider in the
+pool lands in one of three bands by what they spent:
 
 | Band | Default cut | Shares |
 |---|---|---:|
@@ -85,15 +85,34 @@ every one a bottom-band raider draws. Marks that don't divide evenly go to the t
 to the biggest spender first within a band, which keeps the bands strictly ordered: nobody in a
 lower band can out-earn someone in a higher one.
 
-Both cut points and all three share counts are editable, as is a floor that guarantees every
-raider a minimum. On the bundled roster the defaults split the raid **7 / 10 / 8**, and both cut
-points fall in natural gaps in the spend (543g → 498g at the 500 line, 268g → 247g at the 250
-line).
+Both cut points and all three share counts are editable. On the bundled roster the defaults split
+the raid **7 / 10 / 8**, and both cut points fall in natural gaps in the spend (543g → 498g at the
+500 line, 268g → 247g at the 250 line).
 
-The mark total is yours to set. Be aware that a total which is too small cannot keep the bands
-apart — with 3/2/1 shares over 7/10/8 raiders you need **49 marks** for a clean 3/2/1, and at 40
-the bottom band rounds down to zero. The page says so in a banner rather than quietly flattening
-the bands.
+### Floors
+
+Two guarantees sit on top of the bands: a **tank floor** (1 by default) and a **floor for
+everyone** (0 by default). Both are true minimums, not bonuses — a raider whose own band share
+already earns more keeps the larger figure. Tanking costs money the log does not always show,
+which is what the tank floor is for.
+
+They are applied by re-splitting rather than by reservation. Anyone the share split leaves under
+their floor is pinned at it and dropped out of the weighted pool, then the remaining marks are
+re-split over whoever is left, repeating until nobody is short. That keeps the total exact and the
+bands ordered: with everyone floored at 1 the split still comes out 3 / 1–2 / 1, where simply
+reserving a mark per head would flatten it to 2 / 1–2 / 1. Rows lifted this way are tagged `min`
+in the table.
+
+On the defaults that means the two bottom-band tanks are lifted to one Mark each, taken out of the
+middle band, while the top-band tank keeps the three her spend earns.
+
+### Picking a total
+
+The mark total is yours to set, and a total that is too small cannot keep the bands apart — with
+3/2/1 shares over 7/10/8 raiders you need **49 marks** for a clean 3/2/1, and at 40 the bottom
+band rounds to zero apart from the floored tanks. The page says so in a banner rather than quietly
+flattening the bands. If the floors themselves overrun the total, it falls back to an even split
+and says so.
 
 Raiders can be checked out of the pool entirely with the **In** column; their shares are
 redistributed among everyone left, and they are dropped from both PNG exports.

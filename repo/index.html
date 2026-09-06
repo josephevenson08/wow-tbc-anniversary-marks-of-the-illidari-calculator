@@ -256,7 +256,29 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .mkcell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
 .pips{display:inline-flex;gap:2px}
 .pips i{width:6px;height:14px;border-radius:1px;background:var(--accent);display:block}
-.pips i.tf{background:var(--warn)}
+.cuts{display:flex;gap:9px;flex-wrap:wrap}
+.cuts span{display:flex;flex-direction:column;gap:3px;flex:1;min-width:74px}
+.cuts i{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);font-style:normal}
+.cuts input{font-family:var(--mono);font-size:15px;font-weight:600;padding:6px 8px;width:100%;
+  border:1px solid var(--line);border-radius:3px;background:var(--raised);color:var(--ink)}
+.bands{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surface)}
+.bands>div{flex:1;min-width:172px;padding:13px 22px;border-right:1px solid var(--line-soft)}
+.bands>div:last-child{border-right:0}
+.bands .bl{font-family:var(--mono);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--muted)}
+.bands .bv{font-family:var(--display);font-weight:800;font-size:20px;margin-top:3px}
+.bands .bs{font-family:var(--mono);font-size:11.5px;color:var(--accent);margin-top:2px}
+.bands>div.empty .bv,.bands>div.empty .bs{color:var(--muted)}
+.bandtag{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;border-radius:2px;
+  padding:1px 5px;border:1px solid}
+.bandtag.b0{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.bandtag.b1{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.bandtag.b2{color:var(--muted);border-color:var(--line)}
+.exq{accent-color:var(--accent);cursor:pointer;width:15px;height:15px;margin:0;vertical-align:middle}
+tbody tr.exrow{opacity:.4}
+tbody tr.exrow:hover{opacity:.75}
+.exdash{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .net.pos{color:var(--accent)} .net.neg{color:var(--ink2)}
 /* ---------- view tabs ---------- */
 .tabs{display:flex;gap:2px;margin:0 0 14px;flex-wrap:wrap}
@@ -364,22 +386,15 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
     Potions, <em>or</em> ten Destruction Potions &mdash; you pick, you don't get all three. At today's
     Anniversary prices that makes a Mark worth between 82g and 92g depending on which you take, so a
     Mark is consumable currency and handing it to the people who bought the consumables is a straight
-    reimbursement. Default split is proportional to estimated gold spent, with every tank guaranteed one.</p>
+    reimbursement. The split is driven entirely by gold spent &mdash; every raider falls into one of
+    three spend bands, each band draws a fixed number of shares, and the biggest spenders always
+    come out ahead. No scoring enters the distribution.</p>
 
   <div class="marks">
     <div class="marks-ctl">
       <div class="fld bigin">
         <label for="mkTotal">Marks earned this raid</label>
         <input type="number" id="mkTotal" min="0" max="999" step="1" value="40">
-      </div>
-      <div class="fld">
-        <label>Split by</label>
-        <div class="segs" id="mkBasis" role="group" aria-label="Distribution basis">
-          <button type="button" data-v="gold" aria-pressed="true">Gold spent</button>
-          <button type="button" data-v="score" aria-pressed="false">Score</button>
-          <button type="button" data-v="blend" aria-pressed="false">Both</button>
-        </div>
-        <span class="help">Gold spent reimburses outlay. Score also rewards coverage and drums.</span>
       </div>
       <div class="fld">
         <label>A Mark is worth</label>
@@ -393,32 +408,47 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
           <em>or</em> ten Destruction Potions. Never a combination.</span>
       </div>
       <div class="fld">
-        <label for="mkSkew">Skew &mdash; <span class="num" id="mkSkewV">1.0</span></label>
-        <input type="range" id="mkSkew" min="0" max="3" step="0.1" value="1">
-        <span class="help">0 = even split &middot; 1 = strictly proportional &middot; 3 = heavily favours the biggest spenders.</span>
+        <label>Band cut points &mdash; gold spent</label>
+        <div class="cuts">
+          <span><i>top band from</i>
+            <input type="number" id="mkCut1" min="0" max="99999" step="10" value="500"></span>
+          <span><i>middle band from</i>
+            <input type="number" id="mkCut2" min="0" max="99999" step="10" value="250"></span>
+        </div>
+        <span class="help">At or above the first figure is the top band, at or above the second is the
+          middle, everyone else is the bottom band. On this roster 500 and 250 fall in natural gaps in
+          the spend, splitting the raid 7 / 10 / 8.</span>
       </div>
       <div class="fld">
-        <label for="mkTank">Tank floor</label>
-        <input type="number" id="mkTank" min="0" max="20" step="1" value="1">
-        <span class="help">Guaranteed to Captrawr, Oddbird and Thotiana before anything else is split.</span>
+        <label>Shares per band</label>
+        <div class="cuts">
+          <span><i>top</i><input type="number" id="mkW1" min="0" max="20" step="1" value="3"></span>
+          <span><i>middle</i><input type="number" id="mkW2" min="0" max="20" step="1" value="2"></span>
+          <span><i>bottom</i><input type="number" id="mkW3" min="0" max="20" step="1" value="1"></span>
+        </div>
+        <span class="help">A top-band raider draws three shares to a bottom-band raider's one. Marks
+          that don't divide evenly go to the top band first, biggest spender first.</span>
       </div>
       <div class="fld">
         <label for="mkFloor">Floor for everyone</label>
         <input type="number" id="mkFloor" min="0" max="20" step="1" value="0">
-        <span class="help">A guaranteed minimum for every raider, tanks included.</span>
+        <span class="help">A guaranteed minimum for every raider in the pool, taken off the top before
+          the bands are weighted.</span>
       </div>
     </div>
 
+    <div class="bands" id="mkBands"></div>
     <dl class="marks-sum" id="mkSum"></dl>
     <div id="mkWarn"></div>
 
     <div class="tablewrap">
       <table id="mkTbl">
         <thead><tr>
+          <th class="l" style="width:32px">In</th>
           <th class="l" style="width:44px">#</th>
           <th class="l">Raider</th>
           <th>Gold spent</th>
-          <th>Score</th>
+          <th>Band</th>
           <th>Exact share</th>
           <th>Marks</th>
           <th>Mark value</th>
@@ -515,8 +545,9 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
           He drank the most Haste Potions in the raid (29, 238g of them) yet lands mid-table, because
           he covers his elixir slots with Elixir of Draenic Wisdom and Demonslaying at 3&ndash;4g a
           go while the raiders above him buy 77&ndash;92g flasks. Elixirs are roughly twenty times
-          cheaper than flasks, so good prep and heavy spend are not the same thing &mdash; which is
-          exactly why the split has a <em>Score</em> basis as well as a gold one.</span></li>
+          cheaper than flasks, so good prep and heavy spend are not the same thing. The split
+          reimburses spend, not preparation, so he is paid back for what he actually laid out
+          &mdash; worth saying out loud to the raid, because it reads as a snub otherwise.</span></li>
         <li><span class="big ok">57</span><span><b>Marks already spent on Shattrath flasks, by five raiders.</b>
           Azzblast burned 17, Thotiana 16, Orixon 9, Pierogï 8, Donkin 7. They are converting Marks
           into flasks rather than gold &mdash; which is exactly what the reimbursement is for, and a
@@ -571,9 +602,10 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
       for ten Haste or Destruction Potions. That makes a Mark roughly 160g of consumable value at
       current potion prices, and it makes the distribution question simple: Marks are the raid paying
       back the people who funded the raid. Splitting them evenly means a raider who brought nothing
-      gets the same rebate as one who spent 1,200g, which is the opposite of fair. The skew control
-      lets you decide how hard to lean into that; the tank floor exists because tanking costs money
-      whether or not the log shows a big potion count.</p>
+      gets the same rebate as one who spent 1,200g, which is the opposite of fair. The three spend
+      bands are how hard you lean into that: a top-band raider draws three shares to a bottom-band
+      raider's one, and both cut points are yours to move. Nothing else feeds the split &mdash; not
+      score, not role, not tanking.</p>
     <h3>Is the order robust?</h3>
     <p>Every weight, cap and bonus ceiling was re-rolled 4,000 times at &plusmn;40% and the table
       re-sorted each time. 23 of 25 raiders land within two places of their listed rank in at least
@@ -697,7 +729,7 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
 var DATA=window.__RANK__, P=DATA.players, PRICE0=DATA.prices;
 var CL=DATA.clabels, ENGK=DATA.engk;
 var PRICE=Object.assign({},PRICE0);
-var S={total:40,basis:'gold',skew:1,tank:1,floor:0,redeem:'best'};
+var S={total:40,cut1:500,cut2:250,w1:3,w2:2,w3:1,floor:0,redeem:'best',excl:{}};
 var PLABEL={flask:'Flask (bought)',flaskMark:'Shattrath flask (1 Mark)',battle:'Battle elixir',guard:'Guardian elixir',food:'Buff food',
  weapon:'Weapon oil / stone',scroll:'Scroll (rank V)',haste:'Haste Potion',destr:'Destruction Potion',
  iron:'Ironshield Potion',smana:'Super Mana Potion',omana:'Lesser mana potion',felmana:'Fel Mana Potion',
@@ -742,44 +774,70 @@ function markValue(){
 }
 
 /* ---------- allocation ---------- */
+function pool(){ return P.filter(function(p){return !S.excl[p.key];}); }
+
+/* Three spend bands, ordered. Everything below is gold spent at the current
+   prices -- no score, no role, no tank handling. */
+var BANDTAG=['TOP','MID','LOW'];
+function cuts(){
+  var a=Math.max(0,S.cut1), b=Math.max(0,S.cut2);
+  if(b>a){ var t=a; a=b; b=t; }   // stay ordered whatever gets typed in
+  return [a,b];
+}
+function bandOf(gold){ var c=cuts(); return gold>=c[0]?0:(gold>=c[1]?1:2); }
+function bandW(i){ return Math.max(0,[S.w1,S.w2,S.w3][i]); }
+function bandLbl(i){
+  var c=cuts();
+  if(i===0) return g(c[0])+'g and up';
+  if(i===1) return g(c[1])+'\u2013'+g(Math.max(c[1],c[0]-1))+'g';
+  return 'under '+g(c[1])+'g';
+}
+function bandWarn(A,out,bnd){
+  var lo=[1/0,1/0,1/0], hi=[-1,-1,-1], cnt=[0,0,0];
+  A.forEach(function(p){ var b=bnd[p.key], m=out[p.key];
+    cnt[b]++; if(m<lo[b])lo[b]=m; if(m>hi[b])hi[b]=m; });
+  for(var b=0;b<3;b++) for(var c=b+1;c<3;c++)
+    if(cnt[b]&&cnt[c]&&bandW(b)>bandW(c)&&hi[c]>=lo[b])
+      return 'Only '+S.total+' marks to go round, which is not enough to keep the bands apart: the '+
+        bandLbl(c)+' band reaches '+hi[c]+' while the '+bandLbl(b)+' band drops to '+lo[b]+
+        '. Raise the mark total or widen the shares.';
+  return '';
+}
 function allocate(){
-  var n=P.length, fl={}, reserved=0;
-  P.forEach(function(p){var f=Math.max(S.floor, p.tank?S.tank:0); fl[p.key]=f; reserved+=f;});
-  var warn='';
+  var A=pool(), out={}, share={}, bnd={};
+  P.forEach(function(p){ out[p.key]=0; share[p.key]=0; bnd[p.key]=bandOf(goldOf(p)); });
+  if(!A.length) return {alloc:out, share:share, band:bnd,
+    warn:'Every raider is excluded, so there is nobody to split the marks between.'};
+
+  var fl=Math.max(0,S.floor), reserved=fl*A.length;
   if(reserved>S.total){
-    // scale floors down to fit, largest-remainder on the floor vector
-    var sc=S.total/reserved, base={}, used=0, fr=[];
-    P.forEach(function(p){var q=fl[p.key]*sc; base[p.key]=Math.floor(q); used+=base[p.key];
-      fr.push([q-Math.floor(q),p.key]);});
-    fr.sort(function(a,b){return b[0]-a[0];});
-    for(var i=0;i<S.total-used;i++) base[fr[i][1]]++;
-    warn='Guaranteed minimums need '+reserved+' marks but only '+S.total+
-         ' were earned, so the guarantees were scaled down to fit.';
-    return {alloc:base, share:base, warn:warn};
+    // the floor alone overruns the total, so fall back to an even split
+    var per=Math.floor(S.total/A.length), extra=S.total-per*A.length;
+    var byGold=A.slice().sort(function(a,b){
+      return goldOf(b)-goldOf(a) || (a.key<b.key?-1:1);});
+    A.forEach(function(q){ out[q.key]=per; share[q.key]=S.total/A.length; });
+    for(var j=0;j<extra;j++) out[byGold[j].key]++;
+    return {alloc:out, share:share, band:bnd,
+      warn:'A floor of '+fl+' each for '+A.length+' raiders needs '+reserved+' marks but only '+
+        S.total+' were earned, so the floor gave way to an even split.'};
   }
-  var rem=S.total-reserved;
-  var gmax=1,smax=1;
-  P.forEach(function(p){gmax=Math.max(gmax,goldOf(p)); smax=Math.max(smax,p.score);});
-  var w={}, tw=0;
-  P.forEach(function(p){
-    var v;
-    if(S.basis==='gold') v=goldOf(p)/gmax;
-    else if(S.basis==='score') v=p.score/smax;
-    else v=0.5*goldOf(p)/gmax + 0.5*p.score/smax;
-    v=Math.pow(Math.max(v,0), S.skew);
-    w[p.key]=v; tw+=v;
-  });
-  var share={}, base={}, used=0, frac=[];
-  P.forEach(function(p){
-    var q = tw>0 ? rem*w[p.key]/tw : rem/n;
-    share[p.key]=fl[p.key]+q;
+
+  var rem=S.total-reserved, tw=0;
+  A.forEach(function(p){ tw+=bandW(bnd[p.key]); });
+  var base={}, used=0;
+  A.forEach(function(p){
+    var q = tw>0 ? rem*bandW(bnd[p.key])/tw : rem/A.length;
+    share[p.key]=fl+q;
     base[p.key]=Math.floor(q); used+=base[p.key];
-    frac.push([q-Math.floor(q), p.key]);
   });
-  frac.sort(function(a,b){return b[0]-a[0] || (a[1]<b[1]?-1:1);});
-  for(var i=0;i<rem-used;i++) base[frac[i][1]]++;
-  var out={}; P.forEach(function(p){out[p.key]=fl[p.key]+base[p.key];});
-  return {alloc:out, share:share, warn:''};
+  // whatever rounding leaves over goes to the top band first, biggest spender first
+  var ord=A.filter(function(p){ return tw<=0 || bandW(bnd[p.key])>0; })
+    .sort(function(a,b){ return (bnd[a.key]-bnd[b.key]) ||
+      (goldOf(b)-goldOf(a)) || (a.key<b.key?-1:1); });
+  var left=rem-used;
+  for(var i=0;i<left && i<ord.length;i++) base[ord[i].key]++;
+  A.forEach(function(p){ out[p.key]=fl+base[p.key]; });
+  return {alloc:out, share:share, band:bnd, warn:bandWarn(A,out,bnd)};
 }
 
 /* ---------- marks render ---------- */
@@ -788,37 +846,62 @@ function spendRanks(){
   var m={}; s.forEach(function(p,i){ m[p.key]=i+1; }); return m;
 }
 function renderMarks(){
-  var r=allocate(), mv=markValue();
+  var r=allocate(), mv=markValue(), A=pool();
+  var inPool={}; A.forEach(function(p){inPool[p.key]=1;});
   var rows=P.slice().sort(function(a,b){
-    return (r.alloc[b.key]-r.alloc[a.key]) || (goldOf(b)-goldOf(a));});
-  var totalGold=0; P.forEach(function(p){totalGold+=goldOf(p);});
-  var covered=0; P.forEach(function(p){covered+=Math.min(r.alloc[p.key]*mv, goldOf(p));});
+    return ((inPool[b.key]?1:0)-(inPool[a.key]?1:0)) ||
+      (r.alloc[b.key]-r.alloc[a.key]) || (goldOf(b)-goldOf(a));});
+  var totalGold=0; A.forEach(function(p){totalGold+=goldOf(p);});
+  var covered=0; A.forEach(function(p){covered+=Math.min(r.alloc[p.key]*mv, goldOf(p));});
   var rd=redemptions();
   document.getElementById('mkSum').innerHTML=
     tile('Marks distributed', Object.keys(r.alloc).reduce(function(a,k){return a+r.alloc[k];},0))+
+    tile('In the pool', A.length+' of '+P.length)+
     tile('Value per mark', g(mv)+'g')+
     tile('Or: flask / 10 haste / 10 destr', g(rd.flask)+' &middot; '+g(rd.haste)+' &middot; '+g(rd.destr))+
     tile('Total marks value', g(S.total*mv)+'g')+
-    tile('Raid consumable spend', g(totalGold)+'g')+
-    tile('Share reimbursed', Math.round(covered/totalGold*100)+'%');
+    tile('Pool consumable spend', g(totalGold)+'g')+
+    tile('Share reimbursed', totalGold>0?Math.round(covered/totalGold*100)+'%':'&mdash;');
+  var bh='';
+  for(var b=0;b<3;b++){
+    var mem=A.filter(function(q){return r.band[q.key]===b;});
+    var ms=mem.map(function(q){return r.alloc[q.key];});
+    var lo=ms.length?Math.min.apply(null,ms):0, hi=ms.length?Math.max.apply(null,ms):0;
+    var tot=ms.reduce(function(x,y){return x+y;},0);
+    bh+='<div'+(mem.length?'':' class="empty"')+'>'+
+      '<div class="bl">'+bandLbl(b)+' &middot; '+bandW(b)+(bandW(b)===1?' share':' shares')+'</div>'+
+      '<div class="bv">'+mem.length+(mem.length===1?' raider':' raiders')+'</div>'+
+      '<div class="bs">'+(mem.length
+        ? (lo===hi? lo+(lo===1?' mark':' marks')+' each' : lo+'\u2013'+hi+' marks each')+
+          ' &middot; '+g(tot*mv)+'g'
+        : 'nobody in this band')+'</div></div>';
+  }
+  document.getElementById('mkBands').innerHTML=bh;
   document.getElementById('mkWarn').innerHTML = r.warn?
     '<p class="warnbar">'+esc(r.warn)+'</p>':'';
-  var h='';
-  rows.forEach(function(p,i){
+  var h='', n=0;
+  rows.forEach(function(p){
+    var out=!inPool[p.key];
     var gv=goldOf(p), m=r.alloc[p.key], net=m*mv-gv, sh=r.share[p.key];
-    var pips=''; for(var k=0;k<Math.min(m,12);k++)
-      pips+='<i class="'+(p.tank&&k<S.tank?'tf':'')+'"></i>';
-    h+='<tr class="row" style="cursor:default">'+
-      '<td class="l rk">'+(i+1)+'</td>'+
+    if(!out) n++;
+    var pips=''; for(var k=0;k<Math.min(m,12);k++) pips+='<i></i>';
+    h+='<tr class="row'+(out?' exrow':'')+'" style="cursor:default"'+
+      ' data-score="'+p.score.toFixed(1)+'" data-rank="'+p.rank+'">'+
+      '<td class="l"><input type="checkbox" class="exq" data-k="'+esc(p.key)+'"'+
+        (out?'':' checked')+' aria-label="Include '+esc(p.name)+' in the mark pool"></td>'+
+      '<td class="l rk">'+(out?'&mdash;':n)+'</td>'+
       '<td class="l"><div class="who"><span class="tier '+p.tier+'">'+p.tier+'</span>'+
         '<span><span class="nm">'+esc(p.name)+'</span>'+(p.tank?'<span class="tankbadge">TANK</span>':'')+
         '<br><span class="rl">'+esc(p.role)+'</span></span></div></td>'+
       '<td class="gold">'+g(gv)+'g</td>'+
-      '<td class="numcol">'+p.score.toFixed(1)+' <span class="rkgap">#'+p.rank+'</span></td>'+
-      '<td class="numcol">'+sh.toFixed(2)+'</td>'+
-      '<td><div class="mkcell"><span class="pips">'+pips+'</span><span class="mk">'+m+'</span></div></td>'+
-      '<td class="numcol">'+g(m*mv)+'g</td>'+
-      '<td class="numcol net '+(net>=0?'pos':'neg')+'">'+(net>=0?'+':'&minus;')+g(Math.abs(net))+'g</td>'+
+      '<td><span class="bandtag b'+r.band[p.key]+'">'+BANDTAG[r.band[p.key]]+'</span>'+
+        '<span class="rkgap">#'+p.rank+'</span></td>'+
+      '<td class="numcol">'+(out?'&mdash;':sh.toFixed(2))+'</td>'+
+      '<td>'+(out?'<div class="mkcell"><span class="exdash">excluded</span></div>'
+        :'<div class="mkcell"><span class="pips">'+pips+'</span><span class="mk">'+m+'</span></div>')+'</td>'+
+      '<td class="numcol">'+(out?'&mdash;':g(m*mv)+'g')+'</td>'+
+      '<td class="numcol'+(out?'':' net '+(net>=0?'pos':'neg'))+'">'+
+        (out?'&mdash;':(net>=0?'+':'&minus;')+g(Math.abs(net))+'g')+'</td>'+
     '</tr>';
   });
   document.getElementById('mkBody').innerHTML=h;
@@ -827,6 +910,16 @@ function renderMarks(){
     (PRICE['Haste Potion']||0).toFixed(2)+'g · destruction '+
     (PRICE['Destruction Potion']||0).toFixed(2)+'g · mark ≈ '+g(mv)+'g';
 }
+document.getElementById('mkBody').addEventListener('change',function(e){
+  var cb=e.target;
+  if(!cb||!cb.classList||!cb.classList.contains('exq')) return;
+  var k=cb.getAttribute('data-k');
+  if(cb.checked) delete S.excl[k]; else S.excl[k]=1;
+  renderMarks(); writeHash();
+  var all=document.querySelectorAll('#mkBody .exq');
+  for(var i=0;i<all.length;i++)
+    if(all[i].getAttribute('data-k')===k){ all[i].focus(); break; }
+});
 function tile(l,v){return '<div><dt>'+l+'</dt><dd>'+v+'</dd></div>';}
 
 /* ---------- ledger ---------- */
@@ -1044,26 +1137,32 @@ function bind(id,key,fn){
   return el;
 }
 bind('mkTotal','total');
-bind('mkTank','tank');
 bind('mkFloor','floor');
-bind('mkSkew','skew',function(){document.getElementById('mkSkewV').textContent=S.skew.toFixed(1);});
+bind('mkCut1','cut1');
+bind('mkCut2','cut2');
+bind('mkW1','w1');
+bind('mkW2','w2');
+bind('mkW3','w3');
 document.getElementById('mkRedeem').addEventListener('click',function(e){
   var b=e.target.closest('button[data-v]'); if(!b) return;
   S.redeem=b.dataset.v;
   this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
   renderPrices(); renderMarks(); renderLedger(); writeHash();
 });
-document.getElementById('mkBasis').addEventListener('click',function(e){
-  var b=e.target.closest('button[data-v]'); if(!b) return;
-  S.basis=b.dataset.v;
-  this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
-  renderMarks(); writeHash();
-});
-
 /* ---------- share link / restore ---------- */
+function syncCtl(){
+  document.getElementById('mkTotal').value=S.total;
+  document.getElementById('mkFloor').value=S.floor;
+  document.getElementById('mkCut1').value=S.cut1;
+  document.getElementById('mkCut2').value=S.cut2;
+  document.getElementById('mkW1').value=S.w1;
+  document.getElementById('mkW2').value=S.w2;
+  document.getElementById('mkW3').value=S.w3;
+}
 function writeHash(){
   var pd={}; Object.keys(PRICE).forEach(function(k){if(PRICE[k]!==PRICE0[k]) pd[k]=PRICE[k];});
-  var o={t:S.total,b:S.basis,k:S.skew,tk:S.tank,f:S.floor,rd:S.redeem};
+  var o={t:S.total,c1:S.cut1,c2:S.cut2,w1:S.w1,w2:S.w2,w3:S.w3,f:S.floor,rd:S.redeem};
+  var ex=Object.keys(S.excl); if(ex.length) o.x=ex;
   if(Object.keys(pd).length) o.p=pd;
   var s=JSON.stringify(o);
   try{history.replaceState(null,'','#'+encodeURIComponent(s));}catch(e){}
@@ -1075,20 +1174,16 @@ function readState(){
   if(!s){try{s=JSON.parse(localStorage.getItem('rr_marks')||'null');}catch(e){s=null;}}
   if(!s||typeof s!=='object') return;
   if(typeof s.t==='number') S.total=s.t;
-  if(s.b==='gold'||s.b==='score'||s.b==='blend') S.basis=s.b;
-  if(typeof s.k==='number') S.skew=s.k;
-  if(typeof s.tk==='number') S.tank=s.tk;
+  ['c1','c2','w1','w2','w3'].forEach(function(k){
+    var t={c1:'cut1',c2:'cut2',w1:'w1',w2:'w2',w3:'w3'}[k];
+    if(typeof s[k]==='number') S[t]=s[k];});
   if(typeof s.f==='number') S.floor=s.f;
   if(['best','flask','haste','destr'].indexOf(s.rd)>=0) S.redeem=s.rd;
+  if(Array.isArray(s.x)){ var valid={}; P.forEach(function(pl){valid[pl.key]=1;});
+    S.excl={}; s.x.forEach(function(k){ if(valid[k]) S.excl[k]=1; }); }
   if(s.p&&typeof s.p==='object') Object.keys(s.p).forEach(function(k){
     if(k in PRICE && typeof s.p[k]==='number') PRICE[k]=s.p[k];});
-  document.getElementById('mkTotal').value=S.total;
-  document.getElementById('mkTank').value=S.tank;
-  document.getElementById('mkFloor').value=S.floor;
-  document.getElementById('mkSkew').value=S.skew;
-  document.getElementById('mkSkewV').textContent=S.skew.toFixed(1);
-  document.querySelectorAll('#mkBasis button').forEach(function(b){
-    b.setAttribute('aria-pressed',String(b.dataset.v===S.basis));});
+  syncCtl();
   document.querySelectorAll('#mkRedeem button').forEach(function(b){
     b.setAttribute('aria-pressed',String(b.dataset.v===S.redeem));});
 }
@@ -1105,18 +1200,31 @@ document.getElementById('btnShare').addEventListener('click',function(){
 /* ---------- png export ---------- */
 function mkRows(){
   var out=[];
-  document.querySelectorAll('#mkBody tr').forEach(function(tr){
-    var nm=tr.querySelector('.nm'), mk=tr.querySelector('.mk'), rk=tr.querySelector('.rkgap');
-    if(!nm||!mk||!rk) return;
+  document.querySelectorAll('#mkBody tr:not(.exrow)').forEach(function(tr){
+    var nm=tr.querySelector('.nm'), mk=tr.querySelector('.mk');
+    if(!nm||!mk) return;
     out.push({name:nm.textContent.trim(), marks:mk.textContent.trim(),
-      score:parseFloat(rk.parentNode.textContent),
-      rank:parseInt(rk.textContent.replace('#',''),10)});
+      score:parseFloat(tr.getAttribute('data-score')),
+      rank:parseInt(tr.getAttribute('data-rank'),10)});
   });
   return out;
 }
 var MONOF='"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
 function drawTable(title,sub,rows,foot){
-  var sc=2, W=430, pad=24, rowH=25, top=76, bot=44;
+  var sc=2, pad=24, rowH=25, top=76, bot=44, rkw=28, gap=24;
+  // measure first so a long footer or an unusually long name cannot be clipped
+  var m=document.createElement('canvas').getContext('2d');
+  try{m.letterSpacing='1.4px';}catch(e){}
+  m.font='600 11px '+MONOF; var wT=m.measureText(title.toUpperCase()).width;
+  try{m.letterSpacing='0px';}catch(e){}
+  m.font='12.5px '+MONOF; var wS=m.measureText(sub).width;
+  m.font='11px '+MONOF;   var wF=m.measureText(foot).width;
+  var wN=0, wV=0;
+  rows.forEach(function(r){
+    m.font='13px '+MONOF;       wN=Math.max(wN,m.measureText(r[0]).width);
+    m.font='600 13.5px '+MONOF; wV=Math.max(wV,m.measureText(r[1]).width);
+  });
+  var W=Math.ceil(Math.max(430, pad+Math.max(wT,wS,wF)+pad, pad+rkw+wN+gap+wV+pad));
   var H=top+rows.length*rowH+bot;
   var cv=document.createElement('canvas');
   cv.width=W*sc; cv.height=H*sc;
@@ -1140,7 +1248,7 @@ function drawTable(title,sub,rows,foot){
     c.fillText(r[1],W-pad,y);
     c.textAlign='left';
     c.font='13px '+MONOF; c.fillStyle='#0F1F1B';
-    c.fillText(r[0],pad+28,y);
+    c.fillText(r[0],pad+rkw,y);
   });
   var fy=top+rows.length*rowH+8;
   c.strokeStyle='#E4EBE8';
@@ -1158,14 +1266,15 @@ function savePng(cv,file,note){
     document.getElementById('shareMsg').textContent=note;
   },'image/png');
 }
-var BASISLBL={gold:'gold spent',score:'score',blend:'gold + score'};
+function exNote(){ var n=Object.keys(S.excl).length;
+  return n? ' · '+n+' excluded' : ''; }
 document.getElementById('btnPngMarks').addEventListener('click',function(){
   var R=mkRows(), n=0;
   R.forEach(function(r){n+=parseInt(r.marks,10)||0;});
   var cv=drawTable('Marks of the Illidari',
-    S.total+' marks split by '+(BASISLBL[S.basis]||S.basis),
+    S.total+' marks by gold spent \u00b7 bands at '+g(cuts()[0])+'g / '+g(cuts()[1])+'g',
     R.map(function(r){return [r.name,r.marks];}),
-    R.length+' raiders · '+n+' marks · 1 mark ≈ '+g(markValue())+'g');
+    R.length+' raiders'+exNote()+' · '+n+' marks · 1 mark ≈ '+g(markValue())+'g');
   savePng(cv,'marks-of-the-illidari.png',
     'Exported '+R.length+' raiders to marks-of-the-illidari.png.');
 });
@@ -1174,22 +1283,18 @@ document.getElementById('btnPngScore').addEventListener('click',function(){
   var cv=drawTable('Consumable score',
     'Consumable prep — bosses only, all 17 fights',
     R.map(function(r){return [r.name,r.score.toFixed(1)];}),
-    R.length+' raiders · tier A ≥90 · B ≥80 · C ≥65 · D under 65');
+    R.length+' raiders'+exNote()+' · tier A ≥90 · B ≥80 · C ≥65 · D under 65');
   savePng(cv,'consumable-scores.png',
     'Exported '+R.length+' raiders to consumable-scores.png.');
 });
 document.getElementById('btnReset').addEventListener('click',function(){
-  S={total:40,basis:'gold',skew:1,tank:1,floor:0};
+  S={total:40,cut1:500,cut2:250,w1:3,w2:2,w3:1,floor:0,redeem:'best',excl:{}};
   PRICE=Object.assign({},PRICE0);
   try{localStorage.removeItem('rr_marks');}catch(e){}
   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
-  document.getElementById('mkTotal').value=40;
-  document.getElementById('mkTank').value=1;
-  document.getElementById('mkFloor').value=0;
-  document.getElementById('mkSkew').value=1;
-  document.getElementById('mkSkewV').textContent='1.0';
-  document.querySelectorAll('#mkBasis button').forEach(function(b){
-    b.setAttribute('aria-pressed',String(b.dataset.v==='gold'));});
+  syncCtl();
+  document.querySelectorAll('#mkRedeem button').forEach(function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.v==='best'));});
   document.getElementById('shareMsg').textContent='Back to defaults.';
   renderPrices(); renderMarks(); renderLedger();
 });

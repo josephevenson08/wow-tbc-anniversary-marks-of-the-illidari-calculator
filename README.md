@@ -9,8 +9,9 @@ It answers two questions a raid lead actually has to settle:
    elixir slots, food, weapon enhancements, scrolls, combat and mana potions, drums, utility
    items and engineering consumables — bosses only.
 2. **How do we split the Marks of the Illidari fairly?** Marks redeem for consumables, so the
-   split is a reimbursement. Enter the raid's Mark total and the page distributes them in
-   proportion to what each raider actually spent, with a guaranteed floor for tanks.
+   split is a reimbursement. Enter the raid's Mark total and the page distributes them by gold
+   spent alone — every raider falls into one of three spend bands, and each band draws a fixed
+   number of shares. Raiders can be excluded from the pool, and the whole result exports as a PNG.
 
 The whole thing is one self-contained `index.html`. No build step, no dependencies, no server.
 
@@ -34,6 +35,10 @@ The Shattrath flasks are restricted to SSC, TK, Hyjal, Black Temple and Sunwell,
 Exalted with The Sha'tar, Cenarion Expedition, and Aldor or Scryers.
 
 ## The scoring model
+
+The score ranks preparation. It does **not** feed the Mark split — that runs on gold spent alone
+(see [The Mark split](#the-mark-split) below). The two answer different questions: who prepared
+well, and who is owed money.
 
 100 points every raider controls, plus bonuses for consumables only some professions can bring,
 minus flags for using the wrong item.
@@ -63,6 +68,35 @@ would hand every role a category it structurally cannot win.
 
 `scripts/sensitivity.py` re-rolls every weight, cap and bonus ceiling 4,000 times at ±40% and
 re-sorts. 23 of 25 raiders land within two places of their listed rank in at least 86% of runs.
+
+## The Mark split
+
+Marks are distributed on estimated gold spent and nothing else — no score, no role, no tank
+handling. Every raider in the pool lands in one of three bands by what they spent:
+
+| Band | Default cut | Shares |
+|---|---|---:|
+| Top | 500g and up | 3 |
+| Middle | 250–499g | 2 |
+| Bottom | under 250g | 1 |
+
+Each band's share count is its weight in the split, so a top-band raider draws three marks for
+every one a bottom-band raider draws. Marks that don't divide evenly go to the top band first and
+to the biggest spender first within a band, which keeps the bands strictly ordered: nobody in a
+lower band can out-earn someone in a higher one.
+
+Both cut points and all three share counts are editable, as is a floor that guarantees every
+raider a minimum. On the bundled roster the defaults split the raid **7 / 10 / 8**, and both cut
+points fall in natural gaps in the spend (543g → 498g at the 500 line, 268g → 247g at the 250
+line).
+
+The mark total is yours to set. Be aware that a total which is too small cannot keep the bands
+apart — with 3/2/1 shares over 7/10/8 raiders you need **49 marks** for a clean 3/2/1, and at 40
+the bottom band rounds down to zero. The page says so in a banner rather than quietly flattening
+the bands.
+
+Raiders can be checked out of the pool entirely with the **In** column; their shares are
+redistributed among everyone left, and they are dropped from both PNG exports.
 
 ## The gold estimate
 

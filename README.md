@@ -148,7 +148,3 @@ the settings all live in the URL.
 Consumable and gear analysis workbooks by the Classic Log Analyzer (CLA) and Raid Performance Board
 (RPB) community tools. Log data from Warcraft Logs. Price data from BootyBayBroker's TradeSkillMaster
 feed. Item mechanics from Wowhead.
-
-## License
-
-MIT

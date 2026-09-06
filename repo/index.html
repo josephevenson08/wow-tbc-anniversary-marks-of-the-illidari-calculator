@@ -455,7 +455,8 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
 
     <div class="sharebar">
       <button type="button" id="btnShare">Copy share link</button>
-      <button type="button" id="btnExport">Export marks</button>
+      <button type="button" id="btnPngMarks">Export marks PNG</button>
+      <button type="button" id="btnPngScore">Export scores PNG</button>
       <button type="button" id="btnReset">Reset to defaults</button>
       <span class="msg" id="shareMsg">Settings ride in the link &mdash; paste it in guild chat and everyone sees the same split.</span>
     </div>
@@ -1101,23 +1102,81 @@ document.getElementById('btnShare').addEventListener('click',function(){
     navigator.clipboard.writeText(url).then(function(){done(true);},function(){done(false);});
   } else done(false);
 });
-function marksText(){
+/* ---------- png export ---------- */
+function mkRows(){
   var out=[];
   document.querySelectorAll('#mkBody tr').forEach(function(tr){
-    var nm=tr.querySelector('.nm'), mk=tr.querySelector('.mk');
-    if(nm&&mk) out.push(nm.textContent.trim()+': '+mk.textContent.trim());
+    var nm=tr.querySelector('.nm'), mk=tr.querySelector('.mk'), rk=tr.querySelector('.rkgap');
+    if(!nm||!mk||!rk) return;
+    out.push({name:nm.textContent.trim(), marks:mk.textContent.trim(),
+      score:parseFloat(rk.parentNode.textContent),
+      rank:parseInt(rk.textContent.replace('#',''),10)});
   });
-  return out.join('\n')+'\n';
+  return out;
 }
-document.getElementById('btnExport').addEventListener('click',function(){
-  var rows=document.querySelectorAll('#mkBody tr').length;
-  var blob=new Blob([marksText()],{type:'text/plain;charset=utf-8'});
-  var url=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=url; a.download='marks-of-the-illidari.txt';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(function(){URL.revokeObjectURL(url);},0);
-  document.getElementById('shareMsg').textContent=
-    'Exported '+rows+' raiders to marks-of-the-illidari.txt.';
+var MONOF='"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace';
+function drawTable(title,sub,rows,foot){
+  var sc=2, W=430, pad=24, rowH=25, top=76, bot=44;
+  var H=top+rows.length*rowH+bot;
+  var cv=document.createElement('canvas');
+  cv.width=W*sc; cv.height=H*sc;
+  var c=cv.getContext('2d'); c.scale(sc,sc);
+  c.fillStyle='#FAFCFB'; c.fillRect(0,0,W,H);
+  c.fillStyle='#00806B'; c.fillRect(0,0,W,3);
+  try{c.letterSpacing='1.4px';}catch(e){}
+  c.font='600 11px '+MONOF; c.fillStyle='#00806B';
+  c.fillText(title.toUpperCase(),pad,34);
+  try{c.letterSpacing='0px';}catch(e){}
+  c.font='12.5px '+MONOF; c.fillStyle='#667872';
+  c.fillText(sub,pad,54);
+  c.strokeStyle='#D3DEDA'; c.lineWidth=1;
+  c.beginPath(); c.moveTo(pad,68.5); c.lineTo(W-pad,68.5); c.stroke();
+  rows.forEach(function(r,i){
+    var y=top+i*rowH+17;
+    c.textAlign='right';
+    c.font='11px '+MONOF; c.fillStyle='#667872';
+    c.fillText(String(i+1),pad+16,y);
+    c.font='600 13.5px '+MONOF; c.fillStyle='#00806B';
+    c.fillText(r[1],W-pad,y);
+    c.textAlign='left';
+    c.font='13px '+MONOF; c.fillStyle='#0F1F1B';
+    c.fillText(r[0],pad+28,y);
+  });
+  var fy=top+rows.length*rowH+8;
+  c.strokeStyle='#E4EBE8';
+  c.beginPath(); c.moveTo(pad,fy+0.5); c.lineTo(W-pad,fy+0.5); c.stroke();
+  c.font='11px '+MONOF; c.fillStyle='#667872';
+  c.fillText(foot,pad,fy+20);
+  return cv;
+}
+function savePng(cv,file,note){
+  cv.toBlob(function(b){
+    var url=URL.createObjectURL(b), a=document.createElement('a');
+    a.href=url; a.download=file;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},0);
+    document.getElementById('shareMsg').textContent=note;
+  },'image/png');
+}
+var BASISLBL={gold:'gold spent',score:'score',blend:'gold + score'};
+document.getElementById('btnPngMarks').addEventListener('click',function(){
+  var R=mkRows(), n=0;
+  R.forEach(function(r){n+=parseInt(r.marks,10)||0;});
+  var cv=drawTable('Marks of the Illidari',
+    S.total+' marks split by '+(BASISLBL[S.basis]||S.basis),
+    R.map(function(r){return [r.name,r.marks];}),
+    R.length+' raiders · '+n+' marks · 1 mark ≈ '+g(markValue())+'g');
+  savePng(cv,'marks-of-the-illidari.png',
+    'Exported '+R.length+' raiders to marks-of-the-illidari.png.');
+});
+document.getElementById('btnPngScore').addEventListener('click',function(){
+  var R=mkRows().sort(function(a,b){return a.rank-b.rank;});
+  var cv=drawTable('Consumable score',
+    'Consumable prep — bosses only, all 17 fights',
+    R.map(function(r){return [r.name,r.score.toFixed(1)];}),
+    R.length+' raiders · tier A ≥90 · B ≥80 · C ≥65 · D under 65');
+  savePng(cv,'consumable-scores.png',
+    'Exported '+R.length+' raiders to consumable-scores.png.');
 });
 document.getElementById('btnReset').addEventListener('click',function(){
   S={total:40,basis:'gold',skew:1,tank:1,floor:0};

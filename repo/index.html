@@ -223,7 +223,7 @@ footer{margin-top:56px;border-top:1px solid var(--line);background:var(--surface
 .marks{background:var(--surface);border:1px solid var(--line);border-radius:4px;
   box-shadow:var(--shadow);overflow:hidden}
 .marks-ctl{display:grid;gap:20px;padding:22px 24px;border-bottom:1px solid var(--line);
-  grid-template-columns:repeat(auto-fit,minmax(196px,1fr));align-items:end}
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:start}
 .fld{display:flex;flex-direction:column;gap:6px}
 .fld label{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
   color:var(--muted)}
@@ -403,18 +403,17 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
         <input type="number" id="mkTotal" min="0" max="999" step="1" value="40">
       </div>
       <div class="fld">
-        <label>A Mark is worth</label>
-        <div class="segs" id="mkRedeem" role="group" aria-label="Mark redemption">
-          <button type="button" data-v="best" aria-pressed="true">Best</button>
-          <button type="button" data-v="flask">Flask</button>
-          <button type="button" data-v="haste">10 Haste</button>
-          <button type="button" data-v="destr">10 Destr</button>
+        <label>Split shape</label>
+        <div class="segs" id="mkMode" role="group" aria-label="Split shape">
+          <button type="button" data-v="band" aria-pressed="false">Bands</button>
+          <button type="button" data-v="prop" aria-pressed="true">Per gold</button>
         </div>
-        <span class="help">One Mark buys <em>one</em> of these &mdash; a Shattrath flask, ten Haste Potions
-          <em>or</em> ten Destruction Potions. Never a combination.</span>
+        <span class="help"><em>Per gold</em> gives everyone back the same share of what they spent
+          &mdash; the fairer of the two, and nothing to re-tune each week. <em>Bands</em> pays a whole
+          bracket alike: tidier to announce, at the cost of a cliff on each cut.</span>
       </div>
       <div class="fld">
-        <label>Band cut points &mdash; gold spent</label>
+        <label>Band cut points &mdash; gold</label>
         <div class="segs" id="mkAuto" role="group" aria-label="Cut point source">
           <button type="button" data-v="auto" aria-pressed="true">Auto</button>
           <button type="button" data-v="man" aria-pressed="false">Manual</button>
@@ -425,39 +424,33 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
           <span><i>middle band from</i>
             <input type="number" id="mkCut2" min="0" max="99999" step="10" value="250"></span>
         </div>
-        <span class="help">At or above the first figure is the top band, at or above the second is
-          the middle, everyone else is the bottom band. On <em>auto</em> they are found from the spread
-          itself &mdash; the two splits that leave the tightest groups &mdash; so they follow the raid
-          instead of being pinned to one week's log. On <em>per gold</em> they only group the table;
-          they change nobody's marks.</span>
-      </div>
-      <div class="fld">
-        <label>Split shape</label>
-        <div class="segs" id="mkMode" role="group" aria-label="Split shape">
-          <button type="button" data-v="band" aria-pressed="false">Bands</button>
-          <button type="button" data-v="prop" aria-pressed="true">Per gold</button>
-        </div>
-        <span class="help"><em>Per gold</em> gives every raider back the same share of what they
-          personally spent. It is the fairer of the two, the easiest to defend one-on-one, and it has
-          nothing to re-tune from week to week, which is why it is the default. <em>Bands</em> pays
-          everyone in a spend bracket alike, at the rate that bracket averaged &mdash; a tidier rule to
-          announce, at the cost of a cliff on each cut point. Either way the numbers come from the
-          spend itself.</span>
+        <span class="help"><em>Auto</em> reads them off the spread, so they follow the raid rather than
+          one week's log. On <em>per gold</em> they only group the table &mdash; they change nobody's
+          marks.</span>
       </div>
       <div class="fld">
         <label for="mkTank">Tank floor</label>
         <input type="number" id="mkTank" min="0" max="20" step="1" value="1">
-        <span class="help">A guaranteed minimum for Captrawr, Oddbird and Thotiana. It lifts a tank who
-          would otherwise fall short; a tank whose own spend already earns more keeps the larger
-          figure, so it is a floor and not a bonus.</span>
+        <span class="help">A minimum for Captrawr, Oddbird and Thotiana. A tank already earning more
+          keeps the larger figure &mdash; a floor, not a bonus.</span>
       </div>
       <div class="fld">
         <label for="mkFloor">Floor for everyone</label>
         <input type="number" id="mkFloor" min="0" max="20" step="1" value="0">
         <span class="help">The same guarantee, applied to every raider in the pool.</span>
       </div>
+      <div class="fld">
+        <label>A Mark is worth</label>
+        <div class="segs" id="mkRedeem" role="group" aria-label="Mark redemption">
+          <button type="button" data-v="best" aria-pressed="true">Best</button>
+          <button type="button" data-v="flask">Flask</button>
+          <button type="button" data-v="haste">10 Haste</button>
+          <button type="button" data-v="destr">10 Destr</button>
+        </div>
+        <span class="help">One Mark buys <em>one</em> of these &mdash; a flask, ten Haste Potions
+          <em>or</em> ten Destruction Potions. Never a combination.</span>
+      </div>
     </div>
-
     <div class="bands" id="mkBands"></div>
     <dl class="marks-sum" id="mkSum"></dl>
     <div id="mkWarn"></div>

@@ -260,6 +260,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .cuts span{display:flex;flex-direction:column;gap:3px;flex:1;min-width:74px}
 .cuts i{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
   color:var(--muted);font-style:normal}
+.cuts input:disabled{opacity:.5;cursor:not-allowed;background:var(--surface)}
 .cuts input{font-family:var(--mono);font-size:15px;font-weight:600;padding:6px 8px;width:100%;
   border:1px solid var(--line);border-radius:3px;background:var(--raised);color:var(--ink)}
 .bands{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line);background:var(--surface)}
@@ -388,11 +389,12 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
     Potions, <em>or</em> ten Destruction Potions &mdash; you pick, you don't get all three. At today's
     Anniversary prices that makes a Mark worth between 82g and 92g depending on which you take, so a
     Mark is consumable currency and handing it to the people who bought the consumables is a straight
-    reimbursement. The split is driven entirely by gold spent &mdash; every raider falls into one of
-    three spend bands, each band is reimbursed at the rate that band actually averaged, and the
-    biggest spenders always come out ahead. No scoring enters the distribution. The one exception is a guaranteed minimum:
-    tanks are never left with less than one Mark, because tanking costs money the log does not
-    always show.</p>
+    reimbursement. The split is driven entirely by gold spent: by default every raider gets back the
+    same share of their own outlay, so the biggest spenders always come out ahead and nobody loses a
+    Mark to a threshold they missed by a few gold. Switch to bands if you would rather pay everyone in
+    a spend bracket alike; the brackets find themselves from the spread. No scoring enters it either
+    way. The one exception is a guaranteed minimum: tanks are never left with less than one Mark,
+    because tanking costs money the log does not always show.</p>
 
   <div class="marks">
     <div class="marks-ctl">
@@ -413,26 +415,34 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
       </div>
       <div class="fld">
         <label>Band cut points &mdash; gold spent</label>
+        <div class="segs" id="mkAuto" role="group" aria-label="Cut point source">
+          <button type="button" data-v="auto" aria-pressed="true">Auto</button>
+          <button type="button" data-v="man" aria-pressed="false">Manual</button>
+        </div>
         <div class="cuts">
           <span><i>top band from</i>
             <input type="number" id="mkCut1" min="0" max="99999" step="10" value="500"></span>
           <span><i>middle band from</i>
             <input type="number" id="mkCut2" min="0" max="99999" step="10" value="250"></span>
         </div>
-        <span class="help">At or above the first figure is the top band, at or above the second is the
-          middle, everyone else is the bottom band. On this roster 500 and 250 fall in natural gaps in
-          the spend, splitting the raid 7 / 10 / 8.</span>
+        <span class="help">At or above the first figure is the top band, at or above the second is
+          the middle, everyone else is the bottom band. On <em>auto</em> they are found from the spread
+          itself &mdash; the two splits that leave the tightest groups &mdash; so they follow the raid
+          instead of being pinned to one week's log. On <em>per gold</em> they only group the table;
+          they change nobody's marks.</span>
       </div>
       <div class="fld">
         <label>Split shape</label>
         <div class="segs" id="mkMode" role="group" aria-label="Split shape">
-          <button type="button" data-v="band" aria-pressed="true">Bands</button>
-          <button type="button" data-v="prop" aria-pressed="false">Per gold</button>
+          <button type="button" data-v="band" aria-pressed="false">Bands</button>
+          <button type="button" data-v="prop" aria-pressed="true">Per gold</button>
         </div>
-        <span class="help">Shares are worked out from the spend itself &mdash; there is nothing to type
-          in. <em>Bands</em> pays everyone in a band alike, at the rate that band averaged, which is
-          easy to explain but puts a cliff at each cut point. <em>Per gold</em> reimburses each raider
-          on their own spend, so there are no cliffs and no cut points to argue about.</span>
+        <span class="help"><em>Per gold</em> gives every raider back the same share of what they
+          personally spent. It is the fairer of the two, the easiest to defend one-on-one, and it has
+          nothing to re-tune from week to week, which is why it is the default. <em>Bands</em> pays
+          everyone in a spend bracket alike, at the rate that bracket averaged &mdash; a tidier rule to
+          announce, at the cost of a cliff on each cut point. Either way the numbers come from the
+          spend itself.</span>
       </div>
       <div class="fld">
         <label for="mkTank">Tank floor</label>
@@ -610,16 +620,19 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
       in the panel above, since server economies differ by more than double.</p>
     <h3>Why Marks track spend rather than parse</h3>
     <p>A Mark of the Illidari buys a Shattrath flask outright, and the Phase&nbsp;3 vendor trades one
-      for ten Haste or Destruction Potions. That makes a Mark roughly 160g of consumable value at
-      current potion prices, and it makes the distribution question simple: Marks are the raid paying
-      back the people who funded the raid. Splitting them evenly means a raider who brought nothing
-      gets the same rebate as one who spent 1,200g, which is the opposite of fair. The three spend
-      bands are how hard you lean into that: a top-band raider draws three shares to a bottom-band
-      raider's one, and both cut points are yours to move &mdash; though the share figures are
-      derived from what each band really spent rather than typed in, and you can drop the bands
-      altogether and reimburse straight off each raider's own gold. Score never enters it. The only
-      override is the tank floor: it lifts a tank who would otherwise fall short up to the minimum,
-      and leaves alone any tank whose own spend already earns more.</p>
+      for ten Haste or Destruction Potions. That makes a Mark worth 82g to 92g of consumables at the
+      prices in the panel above, and it makes the distribution question simple: Marks are the raid
+      paying back the people who funded the raid. Splitting them evenly means a raider who brought
+      nothing gets the same rebate as one who spent 1,200g, which is the opposite of fair.</p>
+    <p>The default answer is the plain one: everybody gets back the same share of what they put in.
+      At 40 Marks that share is 39%, because 40 Marks is 3,690g of value against 9,531g of spend.
+      Bands are the alternative &mdash; they group the raid into three brackets and pay each bracket
+      at the rate it averaged, which is tidier to announce but means somebody always misses a bracket
+      by a handful of gold. Nothing there is hand-set: the shares come from what each band spent, and
+      the cut points from where the spread actually separates, both recomputed for whatever log is
+      loaded. Score never enters it. The only override is the tank floor: it lifts a tank who would
+      otherwise fall short up to the minimum, and leaves alone any tank whose own spend already earns
+      more.</p>
     <h3>Is the order robust?</h3>
     <p>Every weight, cap and bonus ceiling was re-rolled 4,000 times at &plusmn;40% and the table
       re-sorted each time. 23 of 25 raiders land within two places of their listed rank in at least
@@ -743,7 +756,7 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
 var DATA=window.__RANK__, P=DATA.players, PRICE0=DATA.prices;
 var CL=DATA.clabels, ENGK=DATA.engk;
 var PRICE=Object.assign({},PRICE0);
-var S={total:40,cut1:500,cut2:250,mode:'band',tank:1,floor:0,redeem:'best',excl:{}};
+var S={total:40,cut1:500,cut2:250,autocut:true,mode:'prop',tank:1,floor:0,redeem:'best',excl:{}};
 var PLABEL={flask:'Flask (bought)',flaskMark:'Shattrath flask (1 Mark)',battle:'Battle elixir',guard:'Guardian elixir',food:'Buff food',
  weapon:'Weapon oil / stone',scroll:'Scroll (rank V)',haste:'Haste Potion',destr:'Destruction Potion',
  iron:'Ironshield Potion',smana:'Super Mana Potion',omana:'Lesser mana potion',felmana:'Fel Mana Potion',
@@ -793,7 +806,35 @@ function pool(){ return P.filter(function(p){return !S.excl[p.key];}); }
 /* Three spend bands, ordered. Everything below is gold spent at the current
    prices -- no score, no role, no tank handling. */
 var BANDTAG=['TOP','MID','LOW'];
+function niceCut(lo,hi){
+  // the roundest figure that still sits inside the gap, so it reads as a rule
+  var st=[100,50,25,10,5,1];
+  for(var k=0;k<st.length;k++){ var c=Math.floor(hi/st[k])*st[k]; if(c>lo&&c<=hi) return c; }
+  return hi;
+}
+/* Jenks natural breaks, three classes: the pair of splits leaving the least
+   variation inside each band. It reads the spread rather than the mark total,
+   so it does not chase rounding, and it is recomputed from whichever roster and
+   prices are loaded -- the cut points follow the raid week to week. */
+function autoCuts(){
+  var v=pool().map(function(p){return goldOf(p);}).sort(function(a,b){return a-b;});
+  var n=v.length;
+  if(n<6) return null;
+  var s=[0], s2=[0];
+  for(var i=0;i<n;i++){ s.push(s[i]+v[i]); s2.push(s2[i]+v[i]*v[i]); }
+  function ssd(a,b){ var c=b-a; if(c<=0) return 0;
+    var t=s[b]-s[a]; return (s2[b]-s2[a])-t*t/c; }
+  var best=1/0, bi=1, bj=2;
+  for(var i=1;i<=n-2;i++) for(var j=i+1;j<=n-1;j++){
+    var e=ssd(0,i)+ssd(i,j)+ssd(j,n);
+    if(e<best){ best=e; bi=i; bj=j; }
+  }
+  return [niceCut(v[bj-1],v[bj]), niceCut(v[bi-1],v[bi])];
+}
+var _auto=null;
+function refreshAuto(){ _auto = S.autocut ? autoCuts() : null; }
 function cuts(){
+  if(S.autocut && _auto) return _auto;
   var a=Math.max(0,S.cut1), b=Math.max(0,S.cut2);
   if(b>a){ var t=a; a=b; b=t; }   // stay ordered whatever gets typed in
   return [a,b];
@@ -909,6 +950,10 @@ function spendRanks(){
   var m={}; s.forEach(function(p,i){ m[p.key]=i+1; }); return m;
 }
 function renderMarks(){
+  refreshAuto();
+  var cc=cuts(), ci1=document.getElementById('mkCut1'), ci2=document.getElementById('mkCut2');
+  ci1.disabled=ci2.disabled=!!S.autocut;
+  if(S.autocut){ ci1.value=cc[0]; ci2.value=cc[1]; }
   var r=allocate(), mv=markValue(), A=pool();
   var inPool={}; A.forEach(function(p){inPool[p.key]=1;});
   var rows=P.slice().sort(function(a,b){
@@ -1208,6 +1253,14 @@ bind('mkTank','tank');
 bind('mkFloor','floor');
 bind('mkCut1','cut1');
 bind('mkCut2','cut2');
+document.getElementById('mkAuto').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-v]'); if(!b) return;
+  var had=cuts();                                  // read while auto is still in force
+  S.autocut=(b.dataset.v==='auto');
+  this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
+  if(!S.autocut){ S.cut1=had[0]; S.cut2=had[1]; }  // hand the auto figures over to manual
+  renderMarks(); writeHash();
+});
 document.getElementById('mkMode').addEventListener('click',function(e){
   var b=e.target.closest('button[data-v]'); if(!b) return;
   S.mode=b.dataset.v;
@@ -1229,10 +1282,12 @@ function syncCtl(){
   document.getElementById('mkCut2').value=S.cut2;
   document.querySelectorAll('#mkMode button').forEach(function(b){
     b.setAttribute('aria-pressed',String(b.dataset.v===S.mode));});
+  document.querySelectorAll('#mkAuto button').forEach(function(b){
+    b.setAttribute('aria-pressed',String((b.dataset.v==='auto')===!!S.autocut));});
 }
 function writeHash(){
   var pd={}; Object.keys(PRICE).forEach(function(k){if(PRICE[k]!==PRICE0[k]) pd[k]=PRICE[k];});
-  var o={t:S.total,c1:S.cut1,c2:S.cut2,m:S.mode,tk:S.tank,f:S.floor,rd:S.redeem};
+  var o={t:S.total,c1:S.cut1,c2:S.cut2,ac:S.autocut?1:0,m:S.mode,tk:S.tank,f:S.floor,rd:S.redeem};
   var ex=Object.keys(S.excl); if(ex.length) o.x=ex;
   if(Object.keys(pd).length) o.p=pd;
   var s=JSON.stringify(o);
@@ -1248,6 +1303,7 @@ function readState(){
   if(typeof s.c1==='number') S.cut1=s.c1;
   if(typeof s.c2==='number') S.cut2=s.c2;
   if(s.m==='band'||s.m==='prop') S.mode=s.m;
+  if(s.ac===0||s.ac===1) S.autocut=!!s.ac;
   if(typeof s.tk==='number') S.tank=s.tk;
   if(typeof s.f==='number') S.floor=s.f;
   if(['best','flask','haste','destr'].indexOf(s.rd)>=0) S.redeem=s.rd;
@@ -1360,7 +1416,7 @@ document.getElementById('btnPngScore').addEventListener('click',function(){
     'Exported '+R.length+' raiders to consumable-scores.png.');
 });
 document.getElementById('btnReset').addEventListener('click',function(){
-  S={total:40,cut1:500,cut2:250,mode:'band',tank:1,floor:0,redeem:'best',excl:{}};
+  S={total:40,cut1:500,cut2:250,autocut:true,mode:'prop',tank:1,floor:0,redeem:'best',excl:{}};
   PRICE=Object.assign({},PRICE0);
   try{localStorage.removeItem('rr_marks');}catch(e){}
   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}

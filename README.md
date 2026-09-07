@@ -9,9 +9,9 @@ It answers two questions a raid lead actually has to settle:
    elixir slots, food, weapon enhancements, scrolls, combat and mana potions, drums, utility
    items and engineering consumables — bosses only.
 2. **How do we split the Marks of the Illidari fairly?** Marks redeem for consumables, so the
-   split is a reimbursement. Enter the raid's Mark total and the page distributes them by gold
-   spent alone — every raider falls into one of three spend bands, and each band draws a fixed
-   number of shares. Raiders can be excluded from the pool, and the whole result exports as a PNG.
+   split is a reimbursement. Enter the raid's Mark total and the page distributes it by gold spent
+   alone: by default every raider gets back the same share of their own outlay. Raiders can be
+   excluded from the pool, and the whole result exports as a PNG.
 
 The whole thing is one self-contained `index.html`. No build step, no dependencies, no server.
 
@@ -86,22 +86,37 @@ paid alike. Change the mark total, the prices, or who is in the pool and the sha
 Marks that don't divide evenly go to the biggest spender first, which — because gold order is band
 order — hands them to the top band first and keeps the bands ordered.
 
-Both cut points are editable. On the bundled roster the defaults split the raid **7 / 10 / 8**, and
-both fall in natural gaps in the spend (543g → 498g at the 500 line, 268g → 247g at the 250 line).
+### The cut points find themselves
+
+**Cut points are derived too, on `Auto`.** They come from a three-class
+[Jenks natural breaks](https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization)
+fit — the pair of splits leaving the least variation inside each band — rounded to the nearest
+tidy figure that still sits inside the gap. On the bundled log that lands on **500 / 200**, a
+7 / 11 / 7 split with 45g and 64g of clear air either side of the cuts.
+
+This matters because a raid's spend shape changes every week, and hand-picked cut points go stale
+immediately. Exclude the top spender and the cuts move to 450 / 200 on their own. `Manual` unlocks
+the two boxes and hands over whatever Auto last worked out, so you start from a sane place.
+
+A warning about tuning cuts by hand: it is tempting to pick the cuts that land closest to the
+per-gold split, but that objective is unstable. It chases integer rounding, so it moves with the
+mark total — 660 / 315 at 30 marks, 350 / 185 at 40, 500 / 350 at 80. Jenks reads the shape of the
+spend instead and ignores the mark total, which is why Auto uses it.
 
 ### Bands or per gold
 
-The **Split shape** toggle picks between two ways of spending the same weights:
+The **Split shape** toggle picks how those weights get spent:
 
-- **Bands** — everyone in a band gets the same number of marks. Easy to announce ("you spent 500+,
-  you get 3"), but it puts a cliff at each cut point: at 40 marks Junnox on 498g gets 2 while
-  Donkin on 543g gets 3, so 45g of spend costs a whole mark.
-- **Per gold** — each raider is reimbursed on their own spend, bands collapsed away. No cliffs, and
-  the ordering can never invert: more gold never means fewer marks. Junnox gets 3 and Novick on
-  247g gets 1. Harder to summarise in one sentence to the raid.
+- **Per gold** *(default)* — each raider is reimbursed on their own spend. Every raider gets back
+  the same percentage, the ordering can never invert, and there is nothing to re-tune week to week.
+  The easiest to defend one-on-one: "you spent 446g, he spent 543g, everyone got 39% back."
+- **Bands** — everyone in a band gets the same number of marks, at the rate that band averaged. A
+  tidier rule to announce, at the cost of a cliff on each cut point: at 40 marks Junnox on 498g
+  gets 2 while Donkin on 543g gets 3, so 45g of spend costs a whole mark.
 
-Per gold is the strictly fairer of the two per gold spent. Bands are the more explainable. Both
-run off the same gold figures and neither touches the score.
+Per gold is the fairer per gold spent — by construction it is exactly proportional, where even the
+best-fitting bands move a couple of marks away from it. Bands are the more announceable. Both run
+off the same gold figures and neither touches the score.
 
 ### Floors
 
@@ -127,9 +142,10 @@ about the arithmetic. At 92g a Mark, **40 marks is 3,690g of value against 9,531
 raid can only give back 39% of what it cost.** Spread over 25 raiders that is 1.6 marks each, so
 any scheme is going to leave the bottom of the roster on nought or one.
 
-That is why the bottom band rounds to zero on the defaults: it is not the share figures being
-harsh, it is that those eight raiders put in 11.5% of the gold, and 11.5% of 40 marks is 4.6 marks
-between them. The levers that change it are the mark total and the floors, not the shares:
+That is why the bottom of the roster rounds to zero: it is not the shares or the cuts being
+harsh, it is that those raiders put in about a tenth of the gold, and a tenth of 40 marks is four
+marks between them. The levers that change it are the mark total and the floors, not the shares
+and not the cut points:
 
 - **Raise the total.** More marks, less rounding, everyone moves up.
 - **Floor for everyone = 1.** Nobody leaves with nothing. The re-splitting floor keeps the bands

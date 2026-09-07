@@ -501,6 +501,7 @@ td.gold{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nu
       <button type="button" id="btnShare">Copy share link</button>
       <button type="button" id="btnPngMarks">Export marks PNG</button>
       <button type="button" id="btnPngScore">Export scores PNG</button>
+      <button type="button" id="btnTxtMarks">Marks as text</button>
       <button type="button" id="btnReset">Reset to defaults</button>
       <span class="msg" id="shareMsg">Settings ride in the link &mdash; paste it in guild chat and everyone sees the same split.</span>
     </div>
@@ -1389,15 +1390,49 @@ function savePng(cv,file,note){
 }
 function exNote(){ var n=Object.keys(S.excl).length;
   return n? ' · '+n+' excluded' : ''; }
+/* Caption and footer are shared by both exports so they cannot drift apart.
+   The caption only mentions bands when bands are actually driving the split. */
+function marksSub(){
+  return S.total+' marks by gold spent · '+(S.mode==='band'
+    ? 'bands at '+g(cuts()[0])+'g / '+g(cuts()[1])+'g'
+    : 'same share of spend back for everyone');
+}
+function marksFoot(R){
+  var n=0; R.forEach(function(r){ n+=parseInt(r.marks,10)||0; });
+  return R.length+' raiders'+exNote()+' · '+n+' marks · 1 mark ≈ '+g(markValue())+'g';
+}
+function pad(s,n,left){
+  s=String(s);
+  while(s.length<n) s = left ? ' '+s : s+' ';
+  return s;
+}
+function marksTxt(){
+  var R=mkRows(), w=0;
+  R.forEach(function(r){ w=Math.max(w,r.name.length); });
+  var L=['MARKS OF THE ILLIDARI', marksSub(), ''];
+  R.forEach(function(r,i){
+    L.push(pad(i+1,2,true)+'  '+pad(r.name,w+2)+pad(r.marks,2,true));
+  });
+  L.push('');
+  L.push(marksFoot(R));
+  return L.join('\n')+'\n';
+}
 document.getElementById('btnPngMarks').addEventListener('click',function(){
-  var R=mkRows(), n=0;
-  R.forEach(function(r){n+=parseInt(r.marks,10)||0;});
-  var cv=drawTable('Marks of the Illidari',
-    S.total+' marks by gold spent \u00b7 bands at '+g(cuts()[0])+'g / '+g(cuts()[1])+'g',
-    R.map(function(r){return [r.name,r.marks];}),
-    R.length+' raiders'+exNote()+' · '+n+' marks · 1 mark ≈ '+g(markValue())+'g');
+  var R=mkRows();
+  var cv=drawTable('Marks of the Illidari', marksSub(),
+    R.map(function(r){return [r.name,r.marks];}), marksFoot(R));
   savePng(cv,'marks-of-the-illidari.png',
     'Exported '+R.length+' raiders to marks-of-the-illidari.png.');
+});
+document.getElementById('btnTxtMarks').addEventListener('click',function(){
+  var R=mkRows();
+  var blob=new Blob([marksTxt()],{type:'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='marks-of-the-illidari.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},0);
+  document.getElementById('shareMsg').textContent=
+    'Exported '+R.length+' raiders to marks-of-the-illidari.txt.';
 });
 document.getElementById('btnPngScore').addEventListener('click',function(){
   var R=mkRows().sort(function(a,b){return a.rank-b.rank;});
